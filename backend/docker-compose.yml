@@ -1,0 +1,45 @@
+services:
+  db:
+    image: mysql:8
+    container_name: educast_db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: educast
+      MYSQL_DATABASE: educast
+      MYSQL_USER: educast
+      MYSQL_PASSWORD: educast
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "educast", "-p'educast'"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  api:
+    build: .
+    container_name: educast_api
+    restart: always
+    env_file:
+      - .env
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./uploads:/app/uploads
+    depends_on:
+      db:
+        condition: service_healthy
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: educast_phpmyadmin
+    restart: always
+    environment:
+      PMA_HOST: db
+      PMA_USER: educast
+      PMA_PASSWORD: educast
+    ports:
+      - "8080:80"
+    depends_on:
+      db:
+        condition: service_healthy

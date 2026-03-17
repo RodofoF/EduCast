@@ -1,0 +1,1 @@
+// Aqui iniciarei a lógica de autorização, verificando se o usuário tem permissão para acessar determinados recursos ou realizar certas ações. Isso pode envolver a verificação de tokens JWT, permissões de usuário, ou outros métodos de autenticação e autorização.
