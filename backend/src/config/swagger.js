@@ -1,11 +1,15 @@
 const swaggerJsdoc = require('swagger-jsdoc');
 
+const swaggerHost = process.env.SWAGGER_HOST || 'localhost';
+const swaggerProtocol = process.env.SWAGGER_PROTOCOL || 'http';
+const swaggerPort = process.env.SWAGGER_PORT || process.env.PORT || '3000';
+
 const swaggerDefinition = {
     openapi: '3.0.0',
     info: {
-        title: 'Gateway Speedcast IoT Station API',
+        title: 'EduCast API Documentation',
         version: '1.0.0',
-        description: 'API documentation for the Gateway Speedcast IoT Station project',
+        description: 'API documentation for the EduCast project',
     },
     components: {
         securitySchemes: {
@@ -23,7 +27,7 @@ const swaggerDefinition = {
     ],
     servers: [
         {
-            url: 'http://192.168.111.229:3000/api',
+            url: `${swaggerProtocol}://${swaggerHost}:${swaggerPort}/api`,
             description: 'Development server',
         },
     ],

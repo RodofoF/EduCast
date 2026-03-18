@@ -1,16 +1,33 @@
-const User = require('../models/user.model');
+const User = require('../models/users/user.model');
+const UserGroup = require('../models/users/user.groups.model');
+
 
 async function createUser(req, res) {
     try {
-        const { username, email, password } = req.body;
+        const { username, email, password, userGroups } = req.body;
 
-        if (!username || !email || !password) {
-            return res.status(400).json({ error: 'Username, email and password are required' });
+        if (!username || !email || !password || !userGroups) {
+            return res.status(400).json({ error: 'Username, email, password, and user groups are required' });
         }
 
         const user = await User.create({ username, email, password });
+
+       if (Array.isArray(userGroups) && userGroups.length > 0) {
+            await Promise.all(
+                    userGroups.map(async (groupId) => {
+                        const normalizedGroupId = Number(groupId);
+                        if (!Number.isInteger(normalizedGroupId) || normalizedGroupId < 1) {
+                            return;
+                        }
+
+                        await UserGroup.create({ userId: user.id, groupId: normalizedGroupId });
+                })
+            );
+        }
+
         const safeUser = await User.findByPk(user.id, {
             attributes: { exclude: ['password'] },
+            include: [{ model: UserGroup, as: 'userGroups' }],
         });
 
         res.status(201).json(safeUser);
@@ -24,6 +41,7 @@ async function getAllUsers(req, res) {
     try {
         const users = await User.findAll({
             attributes: { exclude: ['password'] },
+            include: [{ model: UserGroup, as: 'userGroups' }],
         });
         res.json(users);
     } catch (error) {
@@ -37,6 +55,7 @@ async function getUserById(req, res) {
         const { id } = req.params;
         const user = await User.findByPk(id, {
             attributes: { exclude: ['password'] },
+            include: [{ model: UserGroup, as: 'userGroups' }],
         });
 
         if (!user) {
@@ -53,7 +72,7 @@ async function getUserById(req, res) {
 async function updateUser(req, res) {
     try {
         const { id } = req.params;
-        const { username, email, password } = req.body;
+        const { username, email, password, userGroups } = req.body;
 
         const user = await User.findByPk(id);
         if (!user) {
@@ -65,8 +84,26 @@ async function updateUser(req, res) {
         user.password = password || user.password;
         await user.save();
 
+        // Atualizar grupos se forem enviados
+        if (Array.isArray(userGroups)) {
+            await UserGroup.destroy({ where: { userId: user.id } });
+            if (userGroups.length > 0) {
+                await Promise.all(
+                    userGroups.map(async (groupId) => {
+                        const normalizedGroupId = Number(groupId);
+                        if (!Number.isInteger(normalizedGroupId) || normalizedGroupId < 1) {
+                            return;
+                        }
+
+                        await UserGroup.create({ userId: user.id, groupId: normalizedGroupId });
+                    })
+                );
+            }
+        }
+
         const safeUser = await User.findByPk(id, {
             attributes: { exclude: ['password'] },
+            include: [{ model: UserGroup, as: 'userGroups' }],
         });
 
         res.json(safeUser);
@@ -85,7 +122,11 @@ async function deleteUser(req, res) {
             return res.status(404).json({ error: 'User not found' });
         }
 
+        // Deletar os grupos do usuário primeiro
+        await UserGroup.destroy({ where: { userId: id } });
+        // Depois deletar o usuário
         await user.destroy();
+        
         res.json({ message: 'User deleted successfully' });
     } catch (error) {
         console.error('Error deleting user:', error);

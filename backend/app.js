@@ -10,9 +10,10 @@ app.use(cors());
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use(express.json());
 
-// app.use('/api/auth', require('./src/routes/auth.routes'));
+app.use('/api/auth', require('./src/routes/auth.routes'));
 
 //Routes 
+app.use('/api/users', require('./src/routes/user.routes'));
 
 
 app.get('/api/hello', (req, res) => {

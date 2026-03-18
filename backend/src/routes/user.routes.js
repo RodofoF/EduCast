@@ -1,4 +1,6 @@
 const router = require('express').Router();
+const {authorizeAdmin, authorizeUserOrAdmin} = require('../middleware/authorization.middleware');
+const authenticateToken = require('../middleware/auth.middleware');
 const {
     createUser,
     getAllUsers,
@@ -24,17 +26,24 @@ const {
  *               - username
  *               - email
  *               - password
+ *               - userGroups
  *             properties:
  *               username:
  *                 type: string
- *                 example: rodolfo
+ *                 example: test
  *               email:
  *                 type: string
  *                 format: email
- *                 example: rodolfo@email.com
+ *                 example: test@email.com
  *               password:
  *                 type: string
  *                 example: senha123
+ *               userGroups:
+ *                 type: array
+ *                 description: IDs dos grupos do usuário (1=Admin, 2=Teacher, 3=Student, 4=School 1)
+ *                 items:
+ *                   type: integer
+ *                 example: [2, 4]
  *     responses:
  *       201:
  *         description: Usuário criado com sucesso
@@ -52,8 +61,8 @@ const {
  *       500:
  *         description: Erro interno
  */
-router.post('/', createUser);
-router.get('/', getAllUsers);
+router.post('/', authenticateToken, authorizeAdmin, createUser);
+router.get('/', authenticateToken, authorizeUserOrAdmin, getAllUsers);
 
 /**
  * @swagger
@@ -92,14 +101,20 @@ router.get('/', getAllUsers);
  *             properties:
  *               username:
  *                 type: string
- *                 example: rodolfo_atualizado
+ *                 example: test_atualizado
  *               email:
  *                 type: string
  *                 format: email
- *                 example: rodolfo_atualizado@email.com
+ *                 example: test_atualizado@email.com
  *               password:
  *                 type: string
  *                 example: novaSenha123
+ *               userGroups:
+ *                 type: array
+ *                 description: IDs dos grupos do usuário (1=Admin, 2=Teacher, 3=Student, 4=School 1)
+ *                 items:
+ *                   type: integer
+ *                 example: [3]
  *     responses:
  *       200:
  *         description: Usuário atualizado
@@ -121,8 +136,9 @@ router.get('/', getAllUsers);
  *       404:
  *         description: Usuário não encontrado
  */
-router.get('/:id', getUserById);
-router.put('/:id', updateUser);
-router.delete('/:id', deleteUser);
+router.get('/:id', authenticateToken, authorizeUserOrAdmin, getUserById);
+router.put('/:id', authenticateToken, authorizeAdmin, updateUser);
+router.delete('/:id', authenticateToken, authorizeAdmin, deleteUser);
 
 module.exports = router;
+    
