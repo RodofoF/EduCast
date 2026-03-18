@@ -67,3 +67,34 @@ O projeto se concentra em armazenar conteúdo e transmissões ao Vivo em uma CDN
 * TanStack Query
 * Zustand
 * Tailwind CSS
+
+## Iniciando o projeto
+### BackEnd
+1. Para iniciar o projeto execute o comando docker no diretório `backend`
+```bash
+docker compose up --build
+```
+Omita a flag `-d` para conseguir visualizar os logs
+
+2. Acessos
+* Documentação: http://localhost:3000/api-docs
+* DB PhpAdmin: http://localhost:8080
+
+3. Usuários
+Na primeira build ou inicialização do projeto existe o usuário `admin` default para gerenciar o projeto. O primeiro acesso pode ser acessado por
+* Login: admin@email.com.br
+* Password: educastadmin
+
+### Backend explicação
+* Usuários: Para criar os usuários é importante associar os usuários ao grupo
+```bash
+{
+  "username": "test",
+  "email": "rodolfo@email.com.br",
+  "password": "senha123",
+  "userGroups": [
+    1
+  ]
+}
+```
+* 1=Admin, 2=Teacher, 3=Student, 4=School 1
