@@ -30,3 +30,40 @@ O projeto se concentra em armazenar conteúdo e transmissões ao Vivo em uma CDN
 * O aplicativo tem que ser capaz de identificar os conteúdos ao vivo disponveis na CDN;
 * Devemos ter uma plataforma web, util para gerenciar conteúdo e um app útil para os alunos consumirem o conteúdo;
 * Permitir o compatilhamento de dados entre dispositivos e envio do dispositivo para a CDN e a CDN transmitir para a nuvem
+
+# Tecnologias utilizadas
+
+- React Native
+- Expo
+- TypeScript
+- Axios
+- React Navigation
+- Context API
+- Expo Environment Variables
+
+## Tecnologias utilizadas
+### BackEnd
+* Bcrypt
+* Cors
+* Dotenv
+* Express
+* JWT
+* Multer
+* Mysql
+* Sequelize
+* Swagger
+
+### FrontEnd Mobile
+* React Native + Expo
+* Axios 
+* TanStack Query 
+* Zustand 
+* AsyncStorage 
+
+### FrontEnd Web
+* React com Vite
+* React Router
+* Axios
+* TanStack Query
+* Zustand
+* Tailwind CSS
