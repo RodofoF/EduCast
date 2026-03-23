@@ -67,7 +67,7 @@ O EduCast permite:
 
 Tela de login do painel administrativo:
 
-![Login Web](./assets/web-login.png)
+![Login Web](./assets/web-login.PNG)
 
 ---
 
