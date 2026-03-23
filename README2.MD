@@ -175,7 +175,9 @@ Escaneie o QR Code com o Expo Go
 
 🌐 Frontend Web
 cd frontend-web
+
 npm install
+
 npm run dev
 
 Acesse:
