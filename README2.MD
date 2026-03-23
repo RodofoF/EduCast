@@ -80,9 +80,13 @@ Tela de login do aplicativo:
 ---
 
 ## 🧩 Estrutura do Projeto
+
 EduCast/
+
 backend/
+
 frontend-mobile/
+
 frontend-web/
 
 ---
