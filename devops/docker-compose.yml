@@ -1,0 +1,21 @@
+services:
+  nginx-rtmp:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: educast-nginx-rtmp:latest
+    container_name: educast_nginx_rtmp
+    restart: unless-stopped
+    environment:
+      BASE_DIR: /opt/live
+      RTMP_HOST: 127.0.0.1:1935
+      APP_NAME: live
+    ports:
+      - "1935:1935"  # Porta RTMP para receber o stream
+      - "9090:80"    # Porta HTTP para servir HLS e DASH
+    volumes:
+      - ./rtmpHls/live:/tmp/hls/live
+      - ./rtmpDash/live:/tmp/dash/live
+      - ./live:/opt/live:ro
+      - ./ondemand:/opt/ondemand:ro
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro

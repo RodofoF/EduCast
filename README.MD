@@ -10,11 +10,12 @@ O objetivo é desenvolver uma plataforma tecnológica que facilite o ensino em r
 
 ## 📌 Visão Geral
 
-O EduCast é composto por **três camadas principais**:
+O EduCast é composto por **quatro camadas principais**:
 
 - 📦 Backend (API + Banco de Dados)
 - 📱 Frontend Mobile (App para alunos/professores)
 - 🌐 Frontend Web (Painel administrativo e gestão)
+- 📡 DevOps / Streaming (`educast_nginx_rtmp` para RTMP, HLS/DASH e MP4 on-demand)
 
 A proposta é permitir a distribuição de conteúdo educacional mesmo em cenários com baixa conectividade, utilizando CDN local e sincronização de dados.
 
@@ -119,14 +120,13 @@ EduCast/
 │   ├── vite.config.js            # Configuração Vite
 │   └── eslint.config.js          # Linting
 │
-├── 📡 streamServer/              # Servidor de streaming (FFmpeg + Nginx)
-│   ├── ffmpegUdp2Hls/            # Convertedor UDP para HLS
-│   │   ├── ffmpeg.sh             # Script de processamento
-│   │   └── Dockerfile            # Imagem Docker
-│   ├── nginx/                    # Servidor web
-│   │   └── nginx.conf            # Configuração
-│   ├── app.js                    # Aplicação principal
-│   └── docker-compose.yml        # Orquestração
+├── 📡 devops/                    # Servidor de streaming com o container `educast_nginx_rtmp`
+│   ├── docker-compose.yml        # Orquestração do streaming
+│   ├── Dockerfile                # Imagem do nginx-rtmp
+│   ├── nginx.conf                # Configuração RTMP + HLS + DASH + on-demand
+│   ├── live/                     # Vídeos locais usados para simular canais ao vivo
+│   ├── ondemand/                 # Biblioteca MP4 servida sob demanda
+│   └── README.MD                 # Documentação do container de streaming
 │
 ├── 🎨 assets/                    # Imagens e recursos visuais
 ├── README.MD                     # Documentação principal
@@ -139,7 +139,7 @@ EduCast/
 | **Backend** | API RESTful, autenticação, banco de dados | Node.js, Express, MySQL, JWT |
 | **Frontend Mobile** | Aplicativo para alunos e professores | React Native, TypeScript, Expo |
 | **Frontend Web** | Painel administrativo e gestão | React, Vite, TailwindCSS |
-| **Stream Server** | Transmissão de vídeo ao vivo | FFmpeg, Nginx, HLS |
+| **DevOps / Streaming** | Container `educast_nginx_rtmp` para RTMP, HLS/DASH ao vivo e MP4 on-demand | Docker, Nginx RTMP, FFmpeg |
 
 ---
 
@@ -172,9 +172,24 @@ EduCast/
 
 # ⚙️ Como rodar o projeto
 
+## Streaming (`educast_nginx_rtmp`) — subir primeiro
+
+Antes do backend e dos frontends, inicie o container de streaming no diretório `devops`:
+
+```bash
+cd devops
+docker compose up --build -d
+```
+
+Esse passo sobe o container `educast_nginx_rtmp`, responsável por:
+
+- receber/publicar RTMP na porta `1935`
+- gerar saídas ao vivo em HLS e DASH
+- servir vídeos MP4 da pasta `ondemand` pela porta `9090`
+
 ## 🔧 Backend
 
-1. Para iniciar o projeto execute o comando docker no diretório `backend`
+1. Após o streaming estar ativo, execute o comando docker no diretório `backend`
 ```bash
 docker compose up --build
 ```
