@@ -43,21 +43,3 @@ services:
     depends_on:
       db:
         condition: service_healthy
-
-  nginx-rtmp:
-    image: tiangolo/nginx-rtmp
-    container_name: nginx_rtmp
-    restart: always
-    ports:
-      - "1935:1935"  # Porta RTMP para receber streams
-      - "9090:80"    # Porta HTTP para servir HLS e DASH
-    volumes:
-      - ./rtmpHls/live:/tmp/hls/live
-      - ./rtmpHls/record:/tmp/hls/record
-      - ./rtmpDash/live:/tmp/dash/live
-      - ./rtmpDash/record:/tmp/dash/record
-      - ./rtmpRecordings:/tmp/recordings
-      - ./nginx.conf:/etc/nginx/nginx.conf:ro
-    depends_on:
-      db:
-        condition: service_healthy

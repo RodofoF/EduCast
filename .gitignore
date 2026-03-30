@@ -1,3 +1,9 @@
 backend/node_modules/
 backend/mysql_data/
 backend/uploads/
+backend/nginx-rtmp.conf
+backend/rtmpHls/
+backend/rtmpDash/
+backend/rtmpRecordings/
+devops/rtmpHls/
+devops/rtmpDash/
