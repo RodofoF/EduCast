@@ -4,7 +4,7 @@ WORKDIR /app
 
 COPY . .
 
-RUN apk add --no-cache nodejs npm python3 make g++ openssh-client net-tools iputils-ping ffmpeg ca-certificates tzdata
+RUN apk add --no-cache nodejs npm
 
 RUN npm install
 
