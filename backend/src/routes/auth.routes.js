@@ -25,8 +25,11 @@ const router = express.Router();
  *             properties:
  *               email:
  *                 type: string
+ *                 format: email
+ *                 example: admin@email.com.br
  *               password:
  *                 type: string
+ *                 example: educastadmin
  *     responses:
  *       200:
  *         description: Token JWT gerado com sucesso
