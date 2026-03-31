@@ -101,16 +101,22 @@ router.get('/', getAllContent);
  *             properties:
  *               title:
  *                 type: string
+ *                 example: Aula de Matemática Update
  *               user_id:
  *                 type: integer
+ *                 example: 1
  *               category:
  *                 type: string
+ *                 example: Educação Update
  *               theme:
  *                 type: string
+ *                 example: Álgebra Update
  *               subtitle:
  *                 type: string
+ *                 example: Introdução às equações Update
  *               content:
  *                 type: string
+ *                 example: Conteúdo da aula update
  *     responses:
  *       200:
  *         description: Conteúdo atualizado com sucesso
