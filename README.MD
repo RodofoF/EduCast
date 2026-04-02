@@ -273,8 +273,9 @@ Expo Go deve estar atualizado
 
 ## Próximos passos
 * Preparar o backend para interagir com o servidor e a placa, permitindo integração via API com outros sistemas
-* Preparar um servidor Nginx que irá receber o fluxo UDP e transformar em HLS e DASH
-* No servidor Nginx ficarão os arquivos estáticos que servirão o on demand
 * Preparar um endpoint que indica quais vídeos estão disponíveis no ao vivo
-* Preparar endpoints de conteúdo
-* Preparar endpoints de mural da escola
+
+Atividades
+* Criação de upload para videos onDemand
+* Separação de responsabilidade criando diretórios e arquivos para o swagger
+
