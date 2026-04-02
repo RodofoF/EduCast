@@ -7,3 +7,4 @@ backend/rtmpDash/
 backend/rtmpRecordings/
 devops/rtmpHls/
 devops/rtmpDash/
+.DS_Store
