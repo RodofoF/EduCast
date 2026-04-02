@@ -15,6 +15,8 @@ app.use('/api/auth', require('./src/routes/auth.routes'));
 // Routes
 app.use('/api/users', require('./src/routes/user.routes'));
 app.use('/api/content', require('./src/routes/content.routes'));
+app.use('/api/ondemand', require('./src/routes/ondemand.routes'));
+app.use('/api/live', require('./src/routes/live.routes'));
 
 
 app.get('/api/hello', (req, res) => {
