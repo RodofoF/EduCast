@@ -273,9 +273,8 @@ Expo Go deve estar atualizado
 
 ## Próximos passos
 * Preparar o backend para interagir com o servidor e a placa, permitindo integração via API com outros sistemas
-* Preparar um endpoint que indica quais vídeos estão disponíveis no ao vivo
+* Criar testes
+* Unir containers 
+* Colocar autentificação em todas as rotas necessárias
 
-Atividades
-* Criação de upload para videos onDemand
-* Separação de responsabilidade criando diretórios e arquivos para o swagger
 
