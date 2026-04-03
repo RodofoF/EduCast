@@ -1,5 +1,12 @@
+const path = require('path');
 const { Sequelize } = require('sequelize');
-require('dotenv').config();
+
+const envFile = process.env.NODE_ENV === 'test' ? '.env.test' : '.env';
+
+require('dotenv').config({
+  path: path.resolve(__dirname, '../../', envFile),
+  override: true,
+});
 
 const dbUrl = process.env.DB_URL;
 const dbName = process.env.DB_NAME;

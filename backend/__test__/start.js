@@ -1,1 +1,0 @@
-// Iniciar testes com Jest

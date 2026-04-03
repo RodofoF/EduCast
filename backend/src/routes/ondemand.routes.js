@@ -1,4 +1,6 @@
 const router = require('express').Router();
+const { authorizeAdmin, authorizeUserOrAdmin } = require('../middleware/authorization.middleware');
+const authenticateToken = require('../middleware/auth.middleware');
 const {
 	createOnDemand,
 	getAllOnDemands,
@@ -8,10 +10,10 @@ const {
 } = require('../controllers/ondemand.controller');
 const { uploadOnDemandMedia } = require('../middleware/upload.middleware');
 
-router.post('/', uploadOnDemandMedia, createOnDemand);
-router.get('/', getAllOnDemands);
-router.get('/:id', getOnDemandById);
-router.put('/:id', uploadOnDemandMedia, updateOnDemand);
-router.delete('/:id', deleteOnDemand);
+router.post('/', authenticateToken, authorizeAdmin, uploadOnDemandMedia, createOnDemand);
+router.get('/', authenticateToken, authorizeUserOrAdmin, getAllOnDemands);
+router.get('/:id', authenticateToken, authorizeUserOrAdmin, getOnDemandById);
+router.put('/:id', authenticateToken, authorizeAdmin, uploadOnDemandMedia, updateOnDemand);
+router.delete('/:id', authenticateToken, authorizeAdmin, deleteOnDemand);
 
 module.exports = router;
