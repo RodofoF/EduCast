@@ -8,10 +8,10 @@ const {
     updateContent,
     deleteContent,
 } = require('../controllers/content.controller');
-router.post('/', createContent);
-router.get('/', getAllContent);
-router.get('/:id', getContentById);
-router.put('/:id', updateContent);
-router.delete('/:id', deleteContent);
+router.post('/', authenticateToken, authorizeAdmin, createContent);
+router.get('/', authenticateToken, authorizeUserOrAdmin, getAllContent);
+router.get('/:id', authenticateToken, authorizeUserOrAdmin, getContentById);
+router.put('/:id', authenticateToken, authorizeAdmin, updateContent);
+router.delete('/:id', authenticateToken, authorizeAdmin, deleteContent);
 
 module.exports = router;

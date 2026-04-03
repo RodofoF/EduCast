@@ -278,3 +278,7 @@ Expo Go deve estar atualizado
 * Colocar autentificação em todas as rotas necessárias
 
 
+Atividade
+* Criado testes Para garantir o funcionamento da aplicação
+* Criado usuário padrão para stundent para facilitar testes da aplicação
+* Adicionado camadas de segurança nas rotas
