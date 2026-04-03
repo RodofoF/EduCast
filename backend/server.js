@@ -14,8 +14,8 @@ async function startServer() {
   try {
     setupAssociations();
     await connectWithRetry(10, 3000);
-    await sequelize.sync({ force: true });
-    // await sequelize.sync({ alter: true });
+    // await sequelize.sync({ force: true });
+    await sequelize.sync({ alter: true });
     
     // Run seeders after database is synced
     await defaultGroupsSeed();
