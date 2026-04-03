@@ -79,7 +79,7 @@ async function deleteContent(req, res) {
         }
 
         await content.destroy();
-        res.json({ message: 'Content deleted successfully' });
+        res.status(200).json({ message: 'Content deleted successfully' });
     } catch (error) {
         console.error('Error deleting content:', error);
         res.status(500).json({ error: 'Failed to delete content' });
