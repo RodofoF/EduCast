@@ -271,6 +271,31 @@ Para acessar pelo celular, utilize o IP da máquina (não localhost)
 Certifique-se que backend e frontend estão na mesma rede
 Expo Go deve estar atualizado
 
+---
+## Testes
+
+Atualmente, os testes automatizados do projeto estão concentrados no backend, na pasta `backend/__tests__`.
+
+Para executar os testes:
+
+```bash
+cd backend
+npm install
+npm test
+```
+
+O script configurado executa o Jest em ambiente de teste:
+
+```bash
+NODE_ENV=test jest --runInBand
+```
+
+Arquivos de teste atuais:
+- `backend/__tests__/app.test.js`
+- `backend/__tests__/auth.test.js`
+- `backend/__tests__/contents.test.js`
+
+
 ## Próximos passos
 * Preparar o backend para interagir com o servidor e a placa, permitindo integração via API com outros sistemas
 * Criar testes
