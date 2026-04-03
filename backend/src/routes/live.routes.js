@@ -1,4 +1,6 @@
 const router = require('express').Router();
+const { authorizeAdmin, authorizeUserOrAdmin } = require('../middleware/authorization.middleware');
+const authenticateToken = require('../middleware/auth.middleware');
 const {
 	createLive,
 	getAllLives,
@@ -8,10 +10,10 @@ const {
 } = require('../controllers/live.controller');
 const { uploadLiveMedia } = require('../middleware/upload.middleware');
 
-router.post('/', uploadLiveMedia, createLive);
-router.get('/', getAllLives);
-router.get('/:id', getLiveById);
-router.put('/:id', uploadLiveMedia, updateLive);
-router.delete('/:id', deleteLive);
+router.post('/', authenticateToken,authorizeAdmin, uploadLiveMedia, createLive);
+router.get('/', authenticateToken, authorizeUserOrAdmin, getAllLives);
+router.get('/:id', authenticateToken, authorizeUserOrAdmin, getLiveById);
+router.put('/:id', authenticateToken,authorizeAdmin, uploadLiveMedia, updateLive);
+router.delete('/:id', authenticateToken,authorizeAdmin, deleteLive);
 
 module.exports = router;
