@@ -1,22 +1,12 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import LoginPage from "./pages/LoginPage";
+import DashboardPage from "./pages/DashboardPage";
+import VideoLessonsPage from "./pages/VideoLessonsPage";
+import MuralPage from "./pages/MuralPage";
+import UsersPage from "./pages/UsersPage";
+import ProtectedRoute from "./routes/ProtectedRoute";
+import AppLayout from "./layouts/AppLayout";
 import { useAuthStore } from "./store/authStore";
-
-// Exemplo de dashboard simples - isso podemos alterar depois
-function Dashboard() {
-  return <div className="p-6">A construir</div>;
-}
-
-// Rota protegida
-function ProtectedRoute({ children }) {
-  const token = useAuthStore((state) => state.token);
-
-  if (!token) {
-    return <Navigate to="/login" replace />;
-  }
-
-  return children;
-}
 
 export default function App() {
   const token = useAuthStore((state) => state.token);
@@ -24,7 +14,6 @@ export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* raiz redireciona */}
         <Route
           path="/"
           element={
@@ -36,18 +25,16 @@ export default function App() {
           }
         />
 
-        {/* login */}
         <Route path="/login" element={<LoginPage />} />
 
-        {/* protegida */}
-        <Route
-          path="/dashboard"
-          element={
-            <ProtectedRoute>
-              <Dashboard />
-            </ProtectedRoute>
-          }
-        />
+        <Route element={<ProtectedRoute />}>
+          <Route element={<AppLayout />}>
+            <Route path="/dashboard" element={<DashboardPage />} />
+            <Route path="/videoaulas" element={<VideoLessonsPage />} />
+            <Route path="/mural" element={<MuralPage />} />
+            <Route path="/usuarios" element={<UsersPage />} />
+          </Route>
+        </Route>
       </Routes>
     </BrowserRouter>
   );

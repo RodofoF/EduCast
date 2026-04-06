@@ -30,7 +30,7 @@ export default function LoginPage() {
       navigate("/dashboard");
     } catch (err) {
       setError(
-        err?.response?.data?.error || "Não foi possível realizar o login."
+        err?.response?.data?.error || "Não foi possível realizar o login.",
       );
     } finally {
       setLoading(false);
@@ -40,7 +40,7 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen bg-slate-100">
       <div className="grid min-h-screen grid-cols-1 lg:grid-cols-2">
-        <section className="hidden lg:flex flex-col justify-between bg-slate-900 text-white p-10">
+        <section className="hidden lg:flex flex-col justify-between bg-blue-700 text-white p-10 xl:p-14">
           <div className="flex items-center gap-3">
             <div className="rounded-2xl bg-white/10 p-3">
               <GraduationCap className="h-7 w-7" />
@@ -62,7 +62,7 @@ export default function LoginPage() {
               Acesse o painel e gerencie conteúdos, usuários e transmissões.
             </h2>
 
-            <p className="mt-4 text-slate-300 leading-relaxed">
+            <p className="mt-4 text-slate-300 leading-relaxed text-lg">
               Uma experiência mais institucional para professores, equipe
               administrativa e operação do projeto.
             </p>
@@ -84,11 +84,11 @@ export default function LoginPage() {
           </div>
         </section>
 
-        <section className="flex items-center justify-center p-6 md:p-10">
-          <div className="w-full max-w-md rounded-[32px] bg-white p-6 shadow-2xl border border-slate-200 md:p-8">
+        <section className="flex items-center justify-center bg-[#eef2f7] p-6 md:p-10">
+          <div className="w-full max-w-md rounded-[32px] bg-white p-6 shadow-[0_30px_80px_rgba(15,23,42,0.15)] border border-slate-200 md:p-8">
             <div className="mb-8">
               <div className="mb-4 flex items-center gap-3 lg:hidden">
-                <div className="rounded-2xl bg-slate-900 p-3 text-white">
+                <div className="rounded-2xl bg-blue-700 p-3 text-white">
                   <GraduationCap className="h-6 w-6" />
                 </div>
                 <div>
@@ -115,7 +115,7 @@ export default function LoginPage() {
                 <label className="mb-2 block text-sm font-medium text-slate-700">
                   E-mail
                 </label>
-                <div className="flex items-center gap-3 rounded-2xl border border-slate-200 px-4 py-3 focus-within:border-slate-400 focus-within:shadow-sm">
+                <div className="flex items-center gap-3 rounded-2xl border border-slate-200 px-4 py-3 transition focus-within:border-slate-400 focus-within:shadow-sm">
                   <Mail className="h-5 w-5 text-slate-400" />
                   <input
                     type="email"
@@ -131,7 +131,7 @@ export default function LoginPage() {
                 <label className="mb-2 block text-sm font-medium text-slate-700">
                   Senha
                 </label>
-                <div className="flex items-center gap-3 rounded-2xl border border-slate-200 px-4 py-3 focus-within:border-slate-400 focus-within:shadow-sm">
+                <div className="flex items-center gap-3 rounded-2xl border border-slate-200 px-4 py-3 transition focus-within:border-slate-400 focus-within:shadow-sm">
                   <Lock className="h-5 w-5 text-slate-400" />
                   <input
                     type={showPassword ? "text" : "password"}
@@ -143,7 +143,7 @@ export default function LoginPage() {
                   <button
                     type="button"
                     onClick={() => setShowPassword((prev) => !prev)}
-                    className="text-slate-500"
+                    className="text-slate-500 transition hover:text-slate-700"
                   >
                     {showPassword ? (
                       <EyeOff className="h-4 w-4" />
@@ -155,7 +155,7 @@ export default function LoginPage() {
               </div>
 
               {error ? (
-                <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-blue-700">
                   {error}
                 </div>
               ) : null}
@@ -163,7 +163,7 @@ export default function LoginPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full rounded-2xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white transition hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-70"
+                className="w-full rounded-2xl bg-blue-700 px-4 py-3 text-sm font-semibold text-white transition hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-70"
               >
                 {loading ? "Entrando..." : "Entrar"}
               </button>

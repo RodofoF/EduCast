@@ -1,8 +1,12 @@
 import { create } from "zustand";
 
-function getStoredUser() {
-  const raw = localStorage.getItem("educast_user");
-  return raw ? JSON.parse(raw) : null;
+function safeReadJSON(key) {
+  try {
+    const raw = localStorage.getItem(key);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
 }
 
 function getStoredToken() {
@@ -10,14 +14,13 @@ function getStoredToken() {
 }
 
 export const useAuthStore = create((set) => ({
-  user: getStoredUser(),
+  user: safeReadJSON("educast_user"),
   token: getStoredToken(),
 
   setAuth: ({ user, token }) => {
-    localStorage.setItem("educast_user", JSON.stringify(user));
-    localStorage.setItem("educast_token", token);
-
-    set({ user, token });
+    if (user) localStorage.setItem("educast_user", JSON.stringify(user));
+    if (token) localStorage.setItem("educast_token", token);
+    set({ user: user || null, token: token || null });
   },
 
   logout: () => {
