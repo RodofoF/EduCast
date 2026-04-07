@@ -1,6 +1,5 @@
 import {
   Bell,
-  GraduationCap,
   LayoutDashboard,
   LogOut,
   Menu,
@@ -11,6 +10,7 @@ import {
 import { NavLink, Outlet, useLocation } from "react-router-dom";
 import { useMemo, useState } from "react";
 import { useAuthStore } from "../store/authStore";
+import logoEducast from "../assets/logo-educast.png";
 
 const items = [
   { to: "/dashboard", label: "Painel", icon: LayoutDashboard },
@@ -47,14 +47,12 @@ export default function AppLayout() {
           ].join(" ")}
         >
           <div className="flex h-full flex-col">
-            <div className="flex items-center gap-3">
-              <div className="rounded-2xl bg-white/15 p-3 text-white ring-1 ring-white/15">
-                <GraduationCap className="h-7 w-7" />
-              </div>
-              <div>
-                <h1 className="text-xl font-bold">EduCast</h1>
-                <p className="text-sm text-blue-100/85">Portal do professor</p>
-              </div>
+            <div className="rounded-3xl border border-white/10 bg-white/5 p-3">
+              <img
+                src={logoEducast}
+                alt="EduCast"
+                className="h-16 w-auto object-contain rounded-xl"
+              />
             </div>
 
             <div className="mt-8 rounded-3xl border border-white/15 bg-white/10 p-4">
@@ -136,7 +134,7 @@ export default function AppLayout() {
                 </button>
                 <div>
                   <p className="text-xs uppercase tracking-[0.24em] text-blue-700">
-                    EduCast Web
+                    Educação além da internet
                   </p>
                   <h2 className="mt-2 text-2xl font-bold text-slate-900 md:text-3xl">
                     {pageTitle}
