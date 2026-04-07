@@ -358,7 +358,7 @@ Fluxo de demonstração da entrega, com foco em sincronização inicial via serv
 * Criar o painel de thumbnails
 * Campos para editar ao vivo e ondemand
 * Verificar player hls no app
-* Tentar fazer build
+* Tentar fazer build do mobile
 
 
 
