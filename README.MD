@@ -349,9 +349,9 @@ Fluxo de demonstração da entrega, com foco em sincronização inicial via serv
 # Fazer
 ## Rodolfo
 * Substituir videos ao vivo por videos longos educativos sem copyright
-* Colocar o front-web em container
+* Colocar o front-web em container x
 * Pesquisar da build x
-* Gerar QR Code no back
+* Gerar QR Code no back x
 * Organizar README
 
 ## Wanderson

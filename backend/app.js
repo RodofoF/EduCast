@@ -17,6 +17,7 @@ app.use('/api/users', require('./src/routes/user.routes'));
 app.use('/api/content', require('./src/routes/content.routes'));
 app.use('/api/ondemand', require('./src/routes/ondemand.routes'));
 app.use('/api/live', require('./src/routes/live.routes'));
+app.use('/api/qr', require('./src/routes/qr.routes'));
 
 
 app.get('/api/hello', (req, res) => {
