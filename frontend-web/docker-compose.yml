@@ -1,0 +1,9 @@
+services:
+  frontend:
+    build: .
+    container_name: educast_frontend
+    restart: always
+    env_file:
+      - .env
+    ports:
+      - "8081:5173"
