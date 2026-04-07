@@ -350,7 +350,7 @@ Fluxo de demonstração da entrega, com foco em sincronização inicial via serv
 ## Rodolfo
 * Substituir videos ao vivo por videos longos educativos sem copyright
 * Colocar o front-web em container
-* Pesquisar da build
+* Pesquisar da build x
 * Gerar QR Code no back
 * Organizar README
 
