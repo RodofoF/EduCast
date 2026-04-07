@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Eye, EyeOff, Mail, Lock, GraduationCap } from "lucide-react";
+import { Eye, EyeOff, Mail, Lock } from "lucide-react";
 import { loginRequest } from "../services/authService";
 import { useAuthStore } from "../store/authStore";
+import logoEducast from "../assets/logo-educast.png";
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -41,16 +42,12 @@ export default function LoginPage() {
     <div className="min-h-screen bg-slate-100">
       <div className="grid min-h-screen grid-cols-1 lg:grid-cols-2">
         <section className="hidden lg:flex flex-col justify-between bg-blue-700 text-white p-10 xl:p-14">
-          <div className="flex items-center gap-3">
-            <div className="rounded-2xl bg-white/10 p-3">
-              <GraduationCap className="h-7 w-7" />
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold">EduCast</h1>
-              <p className="text-sm text-slate-300">
-                Educação além da internet
-              </p>
-            </div>
+          <div>
+            <img
+              src={logoEducast}
+              alt="EduCast"
+              className="h-24 w-auto object-contain"
+            />
           </div>
 
           <div className="max-w-xl">
@@ -87,16 +84,12 @@ export default function LoginPage() {
         <section className="flex items-center justify-center bg-[#eef2f7] p-6 md:p-10">
           <div className="w-full max-w-md rounded-[32px] bg-white p-6 shadow-[0_30px_80px_rgba(15,23,42,0.15)] border border-slate-200 md:p-8">
             <div className="mb-8">
-              <div className="mb-4 flex items-center gap-3 lg:hidden">
-                <div className="rounded-2xl bg-blue-700 p-3 text-white">
-                  <GraduationCap className="h-6 w-6" />
-                </div>
-                <div>
-                  <h1 className="text-xl font-bold text-slate-900">EduCast</h1>
-                  <p className="text-sm text-slate-500">
-                    Plataforma educacional
-                  </p>
-                </div>
+              <div className="mb-6 lg:hidden">
+                <img
+                  src={logoEducast}
+                  alt="EduCast"
+                  className="h-16 w-auto object-contain rounded-xl"
+                />
               </div>
 
               <p className="text-sm uppercase tracking-[0.2em] text-slate-400">

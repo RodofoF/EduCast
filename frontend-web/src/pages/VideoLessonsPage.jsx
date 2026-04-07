@@ -1,6 +1,7 @@
 import {
   Loader2,
   MonitorPlay,
+  Pencil,
   Radio,
   RefreshCcw,
   Send,
@@ -9,6 +10,7 @@ import {
   Upload,
   Video,
   Layers3,
+  X,
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import Hls from "hls.js";
@@ -21,6 +23,8 @@ import {
   deleteOnDemandVideo,
   listLiveVideos,
   listOnDemandVideos,
+  updateLiveVideo,
+  updateOnDemandVideo,
 } from "../services/videoService";
 import { useAuthStore } from "../store/authStore";
 import { parseApiError } from "../utils/parseApiError";
@@ -60,12 +64,59 @@ function getDisplayDescription(item, fallback = "Sem descrição informada.") {
   return item?.description || fallback;
 }
 
+function getApiBaseUrl() {
+  const envApi = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
+  return envApi.replace(/\/api\/?$/, "");
+}
+
+function resolveAssetUrl(path) {
+  if (!path) return "";
+
+  // Se já for URL completa, retorna direto
+  if (/^https?:\/\//i.test(path)) {
+    return path;
+  }
+
+  // Se for caminho relativo (/uploads/...), monta URL completa
+  const baseUrl = getApiBaseUrl();
+  return `${baseUrl}${path.startsWith("/") ? path : `/${path}`}`;
+}
+
 function resolveVideoUrl(item) {
-  return item?.video_url || item?.videoUrl || item?.url || "";
+  const raw = item?.video_url || item?.videoUrl || item?.url || "";
+  return resolveAssetUrl(raw);
 }
 
 function resolveThumbnailUrl(item) {
-  return item?.thumbnail_url || item?.thumbnailUrl || item?.thumb || "";
+  const raw = item?.thumbnail_url || item?.thumbnailUrl || item?.thumb || "";
+  return resolveAssetUrl(raw);
+}
+
+function buildLiveFormFromItem(item) {
+  return {
+    title: item?.title || "",
+    subtitle: item?.subtitle || "",
+    category: item?.category || "",
+    theme: item?.theme || "",
+    description: item?.description || "",
+    thumbnail_url: resolveThumbnailUrl(item),
+    video_url: resolveVideoUrl(item),
+    thumbnail: null,
+  };
+}
+
+function buildOnDemandFormFromItem(item) {
+  return {
+    title: item?.title || "",
+    subtitle: item?.subtitle || "",
+    category: item?.category || "",
+    theme: item?.theme || "",
+    description: item?.description || "",
+    thumbnail_url: resolveThumbnailUrl(item),
+    video_url: resolveVideoUrl(item),
+    thumbnail: null,
+    video: null,
+  };
 }
 
 export default function VideoLessonsPage() {
@@ -88,7 +139,12 @@ export default function VideoLessonsPage() {
 
   const [liveForm, setLiveForm] = useState(LIVE_INITIAL_FORM);
   const [onDemandForm, setOnDemandForm] = useState(ONDEMAND_INITIAL_FORM);
-  const [activeTab, setActiveTab] = useState("live");
+
+  const [activePublishTab, setActivePublishTab] = useState("live");
+  const [contentTab, setContentTab] = useState("live");
+
+  const [editingLiveId, setEditingLiveId] = useState(null);
+  const [editingOnDemandId, setEditingOnDemandId] = useState(null);
 
   const selectedChannel = useMemo(
     () =>
@@ -97,6 +153,9 @@ export default function VideoLessonsPage() {
       ),
     [liveChannels, selectedChannelId],
   );
+
+  const isEditingLive = Boolean(editingLiveId);
+  const isEditingOnDemand = Boolean(editingOnDemandId);
 
   async function loadData(options = {}) {
     const preserveFeedback = options.preserveFeedback ?? true;
@@ -156,60 +215,117 @@ export default function VideoLessonsPage() {
     }));
   }
 
-  async function handleCreateLive(event) {
+  function resetLiveForm() {
+    setLiveForm(LIVE_INITIAL_FORM);
+    setEditingLiveId(null);
+  }
+
+  function resetOnDemandForm() {
+    setOnDemandForm(ONDEMAND_INITIAL_FORM);
+    setEditingOnDemandId(null);
+  }
+
+  function handleEditLive(item) {
+    const id = getItemId(item);
+    if (!id) return;
+
+    setActivePublishTab("live");
+    setEditingLiveId(id);
+    setLiveForm(buildLiveFormFromItem(item));
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function handleEditOnDemand(item) {
+    const id = getItemId(item);
+    if (!id) return;
+
+    setActivePublishTab("ondemand");
+    setEditingOnDemandId(id);
+    setOnDemandForm(buildOnDemandFormFromItem(item));
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  async function handleSubmitLive(event) {
     event.preventDefault();
     setSavingLive(true);
     setFeedback({ type: "", message: "" });
 
     try {
-      await createLiveVideo({
+      const payload = {
         ...liveForm,
         user_id: authUser?.id ?? authUser?.userId ?? "",
-      });
+      };
 
-      setLiveForm(LIVE_INITIAL_FORM);
+      if (editingLiveId) {
+        await updateLiveVideo(editingLiveId, payload);
 
+        setFeedback({
+          type: "success",
+          message: "Live atualizada com sucesso.",
+        });
+      } else {
+        await createLiveVideo(payload);
+
+        setFeedback({
+          type: "success",
+          message: "Live publicada com sucesso.",
+        });
+      }
+
+      resetLiveForm();
       await loadData();
-
-      setFeedback({
-        type: "success",
-        message: "Live publicada com sucesso.",
-      });
     } catch (error) {
       setFeedback({
         type: "error",
-        message: parseApiError(error, "Não foi possível publicar a live."),
+        message: parseApiError(
+          error,
+          editingLiveId
+            ? "Não foi possível atualizar a live."
+            : "Não foi possível publicar a live.",
+        ),
       });
     } finally {
       setSavingLive(false);
     }
   }
 
-  async function handleCreateOnDemand(event) {
+  async function handleSubmitOnDemand(event) {
     event.preventDefault();
     setSavingOnDemand(true);
     setFeedback({ type: "", message: "" });
 
     try {
-      await createOnDemandVideo({
+      const payload = {
         ...onDemandForm,
         user_id: authUser?.id ?? authUser?.userId ?? "",
-      });
+      };
 
-      setOnDemandForm(ONDEMAND_INITIAL_FORM);
+      if (editingOnDemandId) {
+        await updateOnDemandVideo(editingOnDemandId, payload);
 
+        setFeedback({
+          type: "success",
+          message: "Vídeo on-demand atualizado com sucesso.",
+        });
+      } else {
+        await createOnDemandVideo(payload);
+
+        setFeedback({
+          type: "success",
+          message: "Vídeo on-demand publicado com sucesso.",
+        });
+      }
+
+      resetOnDemandForm();
       await loadData();
-
-      setFeedback({
-        type: "success",
-        message: "Vídeo on-demand publicado com sucesso.",
-      });
     } catch (error) {
       setFeedback({
         type: "error",
         message: parseApiError(
           error,
-          "Não foi possível publicar o vídeo on-demand.",
+          editingOnDemandId
+            ? "Não foi possível atualizar o vídeo on-demand."
+            : "Não foi possível publicar o vídeo on-demand.",
         ),
       });
     } finally {
@@ -231,6 +347,10 @@ export default function VideoLessonsPage() {
       setDeletingId(`live-${id}`);
       await deleteLiveVideo(id);
       await loadData();
+
+      if (String(editingLiveId) === String(id)) {
+        resetLiveForm();
+      }
 
       setFeedback({
         type: "success",
@@ -261,6 +381,10 @@ export default function VideoLessonsPage() {
       await deleteOnDemandVideo(id);
       await loadData();
 
+      if (String(editingOnDemandId) === String(id)) {
+        resetOnDemandForm();
+      }
+
       setFeedback({
         type: "success",
         message: "Vídeo on-demand excluído com sucesso.",
@@ -277,7 +401,7 @@ export default function VideoLessonsPage() {
 
   function renderLiveForm() {
     return (
-      <form onSubmit={handleCreateLive} className="space-y-6">
+      <form onSubmit={handleSubmitLive} className="space-y-6">
         <div className="grid gap-6 xl:grid-cols-2">
           <div className="space-y-5">
             <div>
@@ -380,13 +504,24 @@ export default function VideoLessonsPage() {
         </div>
 
         <div className="flex flex-wrap justify-end gap-3 border-t border-slate-100 pt-5">
-          <button
-            type="button"
-            onClick={() => setLiveForm(LIVE_INITIAL_FORM)}
-            className="inline-flex items-center justify-center gap-2 rounded-[18px] border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-700 transition hover:border-slate-300 hover:bg-slate-50"
-          >
-            Limpar
-          </button>
+          {isEditingLive ? (
+            <button
+              type="button"
+              onClick={resetLiveForm}
+              className="inline-flex items-center justify-center gap-2 rounded-[18px] border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-700 transition hover:border-slate-300 hover:bg-slate-50"
+            >
+              <X className="h-4 w-4" />
+              Cancelar edição
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={resetLiveForm}
+              className="inline-flex items-center justify-center gap-2 rounded-[18px] border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-700 transition hover:border-slate-300 hover:bg-slate-50"
+            >
+              Limpar
+            </button>
+          )}
 
           <button
             type="submit"
@@ -395,10 +530,12 @@ export default function VideoLessonsPage() {
           >
             {savingLive ? (
               <Loader2 className="h-4 w-4 animate-spin" />
+            ) : isEditingLive ? (
+              <Pencil className="h-4 w-4" />
             ) : (
               <Send className="h-4 w-4" />
             )}
-            Publicar live
+            {isEditingLive ? "Salvar live" : "Publicar live"}
           </button>
         </div>
       </form>
@@ -407,7 +544,7 @@ export default function VideoLessonsPage() {
 
   function renderOnDemandForm() {
     return (
-      <form onSubmit={handleCreateOnDemand} className="space-y-6">
+      <form onSubmit={handleSubmitOnDemand} className="space-y-6">
         <div className="grid gap-6 xl:grid-cols-2">
           <div className="space-y-5">
             <div>
@@ -517,13 +654,24 @@ export default function VideoLessonsPage() {
         </div>
 
         <div className="flex flex-wrap justify-end gap-3 border-t border-slate-100 pt-5">
-          <button
-            type="button"
-            onClick={() => setOnDemandForm(ONDEMAND_INITIAL_FORM)}
-            className="inline-flex items-center justify-center gap-2 rounded-[18px] border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-700 transition hover:border-slate-300 hover:bg-slate-50"
-          >
-            Limpar
-          </button>
+          {isEditingOnDemand ? (
+            <button
+              type="button"
+              onClick={resetOnDemandForm}
+              className="inline-flex items-center justify-center gap-2 rounded-[18px] border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-700 transition hover:border-slate-300 hover:bg-slate-50"
+            >
+              <X className="h-4 w-4" />
+              Cancelar edição
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={resetOnDemandForm}
+              className="inline-flex items-center justify-center gap-2 rounded-[18px] border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-700 transition hover:border-slate-300 hover:bg-slate-50"
+            >
+              Limpar
+            </button>
+          )}
 
           <button
             type="submit"
@@ -532,10 +680,12 @@ export default function VideoLessonsPage() {
           >
             {savingOnDemand ? (
               <Loader2 className="h-4 w-4 animate-spin" />
+            ) : isEditingOnDemand ? (
+              <Pencil className="h-4 w-4" />
             ) : (
               <Upload className="h-4 w-4" />
             )}
-            Publicar on-demand
+            {isEditingOnDemand ? "Salvar on-demand" : "Publicar on-demand"}
           </button>
         </div>
       </form>
@@ -612,7 +762,13 @@ export default function VideoLessonsPage() {
               Publicação
             </p>
             <h2 className="mt-2 text-xl font-semibold text-slate-900">
-              Novo conteúdo
+              {activePublishTab === "live"
+                ? isEditingLive
+                  ? "Editar live"
+                  : "Nova live"
+                : isEditingOnDemand
+                  ? "Editar on-demand"
+                  : "Novo on-demand"}
             </h2>
             <p className="mt-1 text-sm text-slate-500">
               Escolha o tipo de publicação e preencha os dados abaixo.
@@ -622,323 +778,418 @@ export default function VideoLessonsPage() {
           <div className="flex flex-wrap gap-3">
             <button
               type="button"
-              onClick={() => setActiveTab("live")}
+              onClick={() => setActivePublishTab("live")}
               className={[
                 "inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition",
-                activeTab === "live"
+                activePublishTab === "live"
                   ? "bg-blue-700 text-white shadow-sm"
                   : "border border-slate-200 bg-white text-slate-700 hover:border-blue-300 hover:text-blue-700",
               ].join(" ")}
             >
               <Radio className="h-4 w-4" />
-              Publicar live
+              Live
             </button>
 
             <button
               type="button"
-              onClick={() => setActiveTab("ondemand")}
+              onClick={() => setActivePublishTab("ondemand")}
               className={[
                 "inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition",
-                activeTab === "ondemand"
+                activePublishTab === "ondemand"
                   ? "bg-blue-700 text-white shadow-sm"
                   : "border border-slate-200 bg-white text-slate-700 hover:border-blue-300 hover:text-blue-700",
               ].join(" ")}
             >
               <Video className="h-4 w-4" />
-              Publicar on-demand
+              On-demand
             </button>
           </div>
         </div>
 
         <div className="mt-6">
-          {activeTab === "live" ? renderLiveForm() : renderOnDemandForm()}
+          {activePublishTab === "live"
+            ? renderLiveForm()
+            : renderOnDemandForm()}
         </div>
       </section>
 
-      <section className="grid gap-6 xl:grid-cols-[1.25fr_0.75fr]">
-        <div className="rounded-[32px] border border-slate-200 bg-white p-5 shadow-sm">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div>
-              <div className="inline-flex items-center gap-2 rounded-full border border-blue-200 bg-blue-600/10 px-3 py-1 text-xs font-medium text-blue-700">
-                <Radio className="h-3.5 w-3.5" />
-                Ao vivo
-              </div>
-
-              <h3 className="mt-3 text-xl font-semibold text-slate-900">
-                {selectedChannel
-                  ? getDisplayTitle(selectedChannel, "Canal ao vivo")
-                  : "Canal ao vivo"}
-              </h3>
-
-              <p className="mt-1 text-sm text-slate-600">
-                {selectedChannel
-                  ? getDisplayDescription(selectedChannel, "Sem descrição.")
-                  : "Selecione um canal disponível."}
-              </p>
-            </div>
-
-            {selectedChannel ? (
-              <button
-                type="button"
-                onClick={() => {
-                  setReloadKey((prev) => prev + 1);
-                  setLiveError("");
-                  setLiveStatus("loading");
-                }}
-                className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:border-blue-300 hover:text-blue-700"
-              >
-                <RefreshCcw className="h-4 w-4" />
-                Recarregar player
-              </button>
-            ) : null}
+      <section className="rounded-[32px] border border-slate-200 bg-white p-5 shadow-sm">
+        <div className="flex flex-col gap-4 border-b border-slate-100 pb-5 md:flex-row md:items-center md:justify-between">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-blue-700">
+              Biblioteca
+            </p>
+            <h2 className="mt-2 text-xl font-semibold text-slate-900">
+              Organizar conteúdos
+            </h2>
+            <p className="mt-1 text-sm text-slate-500">
+              Alterne entre lives e conteúdos gravados para visualizar, editar e
+              excluir.
+            </p>
           </div>
 
-          <div className="mt-5 overflow-hidden rounded-[28px] border border-slate-200 bg-slate-900">
-            {selectedChannel ? (
-              <LivePlayer
-                key={`${getItemId(selectedChannel)}-${reloadKey}`}
-                src={resolveVideoUrl(selectedChannel)}
-                onStatusChange={setLiveStatus}
-                onError={setLiveError}
-              />
+          <div className="flex flex-wrap gap-3">
+            <button
+              type="button"
+              onClick={() => setContentTab("live")}
+              className={[
+                "inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition",
+                contentTab === "live"
+                  ? "bg-blue-700 text-white shadow-sm"
+                  : "border border-slate-200 bg-white text-slate-700 hover:border-blue-300 hover:text-blue-700",
+              ].join(" ")}
+            >
+              <Radio className="h-4 w-4" />
+              Lives
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setContentTab("ondemand")}
+              className={[
+                "inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition",
+                contentTab === "ondemand"
+                  ? "bg-blue-700 text-white shadow-sm"
+                  : "border border-slate-200 bg-white text-slate-700 hover:border-blue-300 hover:text-blue-700",
+              ].join(" ")}
+            >
+              <MonitorPlay className="h-4 w-4" />
+              On-demand
+            </button>
+          </div>
+        </div>
+
+        {contentTab === "live" ? (
+          <div className="mt-6 grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
+            <div className="rounded-[28px] border border-slate-200 bg-slate-50 p-4">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <div className="inline-flex items-center gap-2 rounded-full border border-blue-200 bg-blue-600/10 px-3 py-1 text-xs font-medium text-blue-700">
+                    <Radio className="h-3.5 w-3.5" />
+                    Ao vivo
+                  </div>
+
+                  <h3 className="mt-3 text-xl font-semibold text-slate-900">
+                    {selectedChannel
+                      ? getDisplayTitle(selectedChannel, "Canal ao vivo")
+                      : "Canal ao vivo"}
+                  </h3>
+
+                  <p className="mt-1 text-sm text-slate-600">
+                    {selectedChannel
+                      ? getDisplayDescription(selectedChannel, "Sem descrição.")
+                      : "Selecione uma live para visualizar."}
+                  </p>
+                </div>
+
+                {selectedChannel ? (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setReloadKey((prev) => prev + 1);
+                      setLiveError("");
+                      setLiveStatus("loading");
+                    }}
+                    className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:border-blue-300 hover:text-blue-700"
+                  >
+                    <RefreshCcw className="h-4 w-4" />
+                    Recarregar player
+                  </button>
+                ) : null}
+              </div>
+
+              <div className="mt-5 overflow-hidden rounded-[28px] border border-slate-200 bg-slate-900">
+                {selectedChannel ? (
+                  <LivePlayer
+                    key={`${getItemId(selectedChannel)}-${reloadKey}`}
+                    src={resolveVideoUrl(selectedChannel)}
+                    onStatusChange={setLiveStatus}
+                    onError={setLiveError}
+                  />
+                ) : (
+                  <div className="flex aspect-video items-center justify-center text-sm text-slate-400">
+                    Nenhuma live cadastrada.
+                  </div>
+                )}
+              </div>
+
+              <div className="mt-4 flex flex-wrap items-center gap-3 text-sm">
+                <span
+                  className={[
+                    "rounded-full px-3 py-1 font-medium",
+                    liveStatus === "playing"
+                      ? "bg-blue-600/10 text-blue-700"
+                      : liveStatus === "loading"
+                        ? "bg-slate-100 text-blue-700"
+                        : "bg-slate-100 text-slate-700",
+                  ].join(" ")}
+                >
+                  {liveStatus === "playing"
+                    ? "Transmitindo"
+                    : liveStatus === "loading"
+                      ? "Carregando stream"
+                      : "Aguardando stream"}
+                </span>
+
+                <span className="break-all text-slate-500">
+                  Fonte:{" "}
+                  {selectedChannel ? resolveVideoUrl(selectedChannel) : "-"}
+                </span>
+              </div>
+
+              {liveError ? (
+                <div className="mt-4 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700">
+                  {liveError}
+                </div>
+              ) : null}
+            </div>
+
+            <div className="space-y-4">
+              <div className="flex items-center gap-2 text-slate-900">
+                <Tv className="h-5 w-5 text-blue-700" />
+                <h3 className="text-lg font-semibold">Lives cadastradas</h3>
+              </div>
+
+              {loading ? (
+                <div className="flex items-center gap-2 text-sm text-slate-600">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Carregando lives...
+                </div>
+              ) : liveChannels.length ? (
+                <div className="space-y-3">
+                  {liveChannels.map((channel) => {
+                    const id = getItemId(channel);
+                    const isActive = String(id) === String(selectedChannelId);
+                    const deleteKey = `live-${id}`;
+                    const thumbnail = resolveThumbnailUrl(channel);
+
+                    return (
+                      <article
+                        key={id}
+                        className={[
+                          "overflow-hidden rounded-[24px] border bg-white shadow-sm transition",
+                          isActive
+                            ? "border-blue-300 ring-2 ring-blue-100"
+                            : "border-slate-200",
+                        ].join(" ")}
+                      >
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSelectedChannelId(id);
+                            setLiveError("");
+                            setLiveStatus("loading");
+                          }}
+                          className="block w-full cursor-pointer text-left"
+                        >
+                          {thumbnail ? (
+                            <img
+                              src={thumbnail}
+                              alt={getDisplayTitle(channel, "Live")}
+                              className="aspect-video w-full object-cover"
+                            />
+                          ) : (
+                            <div className="flex aspect-video items-center justify-center bg-slate-100 text-sm text-slate-400">
+                              Sem thumbnail
+                            </div>
+                          )}
+
+                          <div className="p-4">
+                            <div className="flex items-start justify-between gap-3">
+                              <div>
+                                <div className="inline-flex items-center gap-2 rounded-full bg-blue-600/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-blue-700">
+                                  <Radio className="h-3.5 w-3.5" />
+                                  Live
+                                </div>
+
+                                <h4 className="mt-3 text-sm font-semibold text-slate-900">
+                                  {getDisplayTitle(channel, "Sem título")}
+                                </h4>
+
+                                <p className="mt-2 line-clamp-3 text-xs leading-5 text-slate-600">
+                                  {getDisplayDescription(channel)}
+                                </p>
+                              </div>
+
+                              <span className="rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-medium text-slate-700">
+                                #{id}
+                              </span>
+                            </div>
+
+                            <p className="mt-3 line-clamp-2 break-all text-xs text-slate-500">
+                              {resolveVideoUrl(channel) || "Sem video_url"}
+                            </p>
+                          </div>
+                        </button>
+
+                        <div className="flex items-center gap-2 border-t border-slate-100 px-4 py-3">
+                          <button
+                            type="button"
+                            onClick={() => handleEditLive(channel)}
+                            className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition hover:border-blue-300 hover:text-blue-700"
+                          >
+                            <Pencil className="h-3.5 w-3.5" />
+                            Editar
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteLive(channel)}
+                            disabled={deletingId === deleteKey}
+                            className="inline-flex items-center gap-2 rounded-full border border-red-200 bg-white px-3 py-2 text-xs font-semibold text-red-600 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-70"
+                          >
+                            {deletingId === deleteKey ? (
+                              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                            ) : (
+                              <Trash2 className="h-3.5 w-3.5" />
+                            )}
+                            Excluir
+                          </button>
+                        </div>
+                      </article>
+                    );
+                  })}
+                </div>
+              ) : (
+                <EmptyState
+                  title="Nenhuma live cadastrada"
+                  description="Publique uma live usando o formulário acima e ela aparecerá aqui."
+                />
+              )}
+            </div>
+          </div>
+        ) : (
+          <div className="mt-6">
+            <div className="flex items-center gap-2 text-slate-900">
+              <MonitorPlay className="h-5 w-5 text-blue-700" />
+              <h3 className="text-lg font-semibold">Conteúdo on-demand</h3>
+            </div>
+
+            {loading ? (
+              <div className="mt-4 flex items-center gap-2 text-sm text-slate-600">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Carregando vídeos...
+              </div>
+            ) : onDemandVideos.length ? (
+              <div className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                {onDemandVideos.map((video) => {
+                  const id = getItemId(video);
+                  const thumbnail = resolveThumbnailUrl(video);
+                  const videoUrl = resolveVideoUrl(video);
+                  const deleteKey = `ondemand-${id}`;
+
+                  return (
+                    <article
+                      key={id}
+                      className="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-sm"
+                    >
+                      <div className="bg-black">
+                        {thumbnail ? (
+                          <img
+                            src={thumbnail}
+                            alt={getDisplayTitle(video, "Vídeo")}
+                            className="aspect-video w-full object-cover"
+                          />
+                        ) : videoUrl ? (
+                          <video
+                            controls
+                            preload="metadata"
+                            className="aspect-video w-full"
+                            src={videoUrl}
+                          >
+                            Seu navegador não suporta vídeo HTML5.
+                          </video>
+                        ) : (
+                          <div className="flex aspect-video items-center justify-center text-sm text-slate-400">
+                            Sem mídia disponível
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="p-5">
+                        <div className="flex items-start justify-between gap-3">
+                          <div>
+                            <div className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-700">
+                              <Video className="h-3.5 w-3.5" />
+                              On-demand
+                            </div>
+
+                            <h4 className="mt-3 text-base font-semibold text-slate-900">
+                              {getDisplayTitle(video, "Sem título")}
+                            </h4>
+
+                            {video.subtitle ? (
+                              <p className="mt-1 text-xs font-medium uppercase tracking-[0.18em] text-blue-700">
+                                {video.subtitle}
+                              </p>
+                            ) : null}
+                          </div>
+
+                          <span className="rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-medium text-slate-700">
+                            #{id}
+                          </span>
+                        </div>
+
+                        <p className="mt-3 text-sm leading-6 text-slate-600">
+                          {getDisplayDescription(video)}
+                        </p>
+
+                        <div className="mt-4 flex flex-wrap gap-2">
+                          {video.category ? (
+                            <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700">
+                              {video.category}
+                            </span>
+                          ) : null}
+
+                          {video.theme ? (
+                            <span className="rounded-full bg-blue-600/10 px-3 py-1 text-xs font-medium text-blue-700">
+                              {video.theme}
+                            </span>
+                          ) : null}
+                        </div>
+
+                        <p className="mt-4 line-clamp-2 break-all text-xs text-slate-500">
+                          {videoUrl || "Sem video_url"}
+                        </p>
+                      </div>
+
+                      <div className="flex items-center gap-2 border-t border-slate-100 px-5 py-4">
+                        <button
+                          type="button"
+                          onClick={() => handleEditOnDemand(video)}
+                          className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition hover:border-blue-300 hover:text-blue-700"
+                        >
+                          <Pencil className="h-3.5 w-3.5" />
+                          Editar
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteOnDemand(video)}
+                          disabled={deletingId === deleteKey}
+                          className="inline-flex items-center gap-2 rounded-full border border-red-200 bg-white px-3 py-2 text-xs font-semibold text-red-600 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-70"
+                        >
+                          {deletingId === deleteKey ? (
+                            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                          ) : (
+                            <Trash2 className="h-3.5 w-3.5" />
+                          )}
+                          Excluir
+                        </button>
+                      </div>
+                    </article>
+                  );
+                })}
+              </div>
             ) : (
-              <div className="flex aspect-video items-center justify-center text-sm text-slate-400">
-                Nenhuma live cadastrada.
+              <div className="mt-4">
+                <EmptyState
+                  title="Nenhum vídeo on-demand cadastrado"
+                  description="Publique um conteúdo usando o formulário acima para começar a listar os vídeos aqui."
+                />
               </div>
             )}
           </div>
-
-          <div className="mt-4 flex flex-wrap items-center gap-3 text-sm">
-            <span
-              className={[
-                "rounded-full px-3 py-1 font-medium",
-                liveStatus === "playing"
-                  ? "bg-blue-600/10 text-blue-700"
-                  : liveStatus === "loading"
-                    ? "bg-slate-100 text-blue-700"
-                    : "bg-slate-100 text-slate-700",
-              ].join(" ")}
-            >
-              {liveStatus === "playing"
-                ? "Transmitindo"
-                : liveStatus === "loading"
-                  ? "Carregando stream"
-                  : "Aguardando stream"}
-            </span>
-
-            <span className="break-all text-slate-500">
-              Fonte: {selectedChannel ? resolveVideoUrl(selectedChannel) : "-"}
-            </span>
-          </div>
-
-          {liveError ? (
-            <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-100 px-4 py-3 text-sm text-slate-700">
-              {liveError}
-            </div>
-          ) : null}
-        </div>
-
-        <div className="rounded-[32px] border border-slate-200 bg-white p-5 shadow-sm">
-          <div className="flex items-center gap-2 text-slate-900">
-            <Tv className="h-5 w-5 text-blue-700" />
-            <h3 className="text-lg font-semibold">Lives cadastradas</h3>
-          </div>
-
-          {loading ? (
-            <div className="mt-5 flex items-center gap-2 text-sm text-slate-600">
-              <Loader2 className="h-4 w-4 animate-spin" />
-              Carregando lives...
-            </div>
-          ) : liveChannels.length ? (
-            <div className="mt-5 space-y-3">
-              {liveChannels.map((channel) => {
-                const id = getItemId(channel);
-                const isActive = String(id) === String(selectedChannelId);
-                const deleteKey = `live-${id}`;
-
-                return (
-                  <div
-                    key={id}
-                    className={[
-                      "rounded-[24px] border p-4 transition",
-                      isActive
-                        ? "border-blue-500/40 bg-blue-600/10"
-                        : "border-slate-200 bg-slate-50",
-                    ].join(" ")}
-                  >
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setSelectedChannelId(id);
-                        setLiveError("");
-                        setLiveStatus("loading");
-                      }}
-                      className="w-full cursor-pointer text-left"
-                    >
-                      <div className="flex items-start justify-between gap-3">
-                        <div>
-                          <h4 className="text-sm font-semibold text-slate-900">
-                            {getDisplayTitle(channel, "Sem título")}
-                          </h4>
-                          <p className="mt-1 text-xs leading-5 text-slate-600">
-                            {getDisplayDescription(channel)}
-                          </p>
-                        </div>
-
-                        <span
-                          className={[
-                            "rounded-full px-2.5 py-1 text-[11px] font-medium",
-                            isActive
-                              ? "bg-blue-100 text-blue-700"
-                              : "bg-slate-100 text-slate-700",
-                          ].join(" ")}
-                        >
-                          #{id}
-                        </span>
-                      </div>
-                    </button>
-
-                    <div className="mt-3 flex items-center justify-between gap-3">
-                      <p className="line-clamp-2 break-all text-xs text-slate-500">
-                        {resolveVideoUrl(channel) || "Sem video_url"}
-                      </p>
-
-                      <button
-                        type="button"
-                        onClick={() => handleDeleteLive(channel)}
-                        disabled={deletingId === deleteKey}
-                        className="inline-flex items-center gap-2 rounded-full border border-red-200 bg-white px-3 py-2 text-xs font-semibold text-red-600 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-70"
-                      >
-                        {deletingId === deleteKey ? (
-                          <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                        ) : (
-                          <Trash2 className="h-3.5 w-3.5" />
-                        )}
-                        Excluir
-                      </button>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          ) : (
-            <div className="mt-5">
-              <EmptyState
-                title="Nenhuma live cadastrada"
-                description="Publique uma live usando o formulário acima e ela aparecerá aqui."
-              />
-            </div>
-          )}
-        </div>
-      </section>
-
-      <section className="space-y-4">
-        <div className="flex items-center gap-2 text-slate-900">
-          <MonitorPlay className="h-5 w-5 text-blue-700" />
-          <h3 className="text-lg font-semibold">Conteúdo on-demand</h3>
-        </div>
-
-        {loading ? (
-          <div className="flex items-center gap-2 text-sm text-slate-600">
-            <Loader2 className="h-4 w-4 animate-spin" />
-            Carregando vídeos...
-          </div>
-        ) : onDemandVideos.length ? (
-          <div className="grid gap-4 md:grid-cols-2">
-            {onDemandVideos.map((video) => {
-              const id = getItemId(video);
-              const thumbnail = resolveThumbnailUrl(video);
-              const videoUrl = resolveVideoUrl(video);
-              const deleteKey = `ondemand-${id}`;
-
-              return (
-                <article
-                  key={id}
-                  className="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-sm"
-                >
-                  <div className="bg-black">
-                    {videoUrl ? (
-                      <video
-                        controls
-                        preload="metadata"
-                        className="aspect-video w-full"
-                        src={videoUrl}
-                      >
-                        Seu navegador não suporta vídeo HTML5.
-                      </video>
-                    ) : thumbnail ? (
-                      <img
-                        src={thumbnail}
-                        alt={getDisplayTitle(video, "Vídeo")}
-                        className="aspect-video w-full object-cover"
-                      />
-                    ) : (
-                      <div className="flex aspect-video items-center justify-center text-sm text-slate-400">
-                        Sem mídia disponível
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="p-5">
-                    <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <h4 className="text-base font-semibold text-slate-900">
-                          {getDisplayTitle(video, "Sem título")}
-                        </h4>
-
-                        {video.subtitle ? (
-                          <p className="mt-1 text-xs font-medium uppercase tracking-[0.18em] text-blue-700">
-                            {video.subtitle}
-                          </p>
-                        ) : null}
-                      </div>
-
-                      <button
-                        type="button"
-                        onClick={() => handleDeleteOnDemand(video)}
-                        disabled={deletingId === deleteKey}
-                        className="inline-flex items-center gap-2 rounded-full border border-red-200 bg-white px-3 py-2 text-xs font-semibold text-red-600 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-70"
-                      >
-                        {deletingId === deleteKey ? (
-                          <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                        ) : (
-                          <Trash2 className="h-3.5 w-3.5" />
-                        )}
-                        Excluir
-                      </button>
-                    </div>
-
-                    <p className="mt-2 text-sm leading-6 text-slate-600">
-                      {getDisplayDescription(video)}
-                    </p>
-
-                    <div className="mt-3 flex flex-wrap gap-2">
-                      {video.category ? (
-                        <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700">
-                          {video.category}
-                        </span>
-                      ) : null}
-
-                      {video.theme ? (
-                        <span className="rounded-full bg-blue-600/10 px-3 py-1 text-xs font-medium text-blue-700">
-                          {video.theme}
-                        </span>
-                      ) : null}
-                    </div>
-
-                    <p className="mt-3 break-all text-xs text-slate-500">
-                      {videoUrl || "Sem video_url"}
-                    </p>
-                  </div>
-                </article>
-              );
-            })}
-          </div>
-        ) : (
-          <EmptyState
-            title="Nenhum vídeo on-demand cadastrado"
-            description="Publique um conteúdo usando o formulário acima para começar a listar os vídeos aqui."
-          />
         )}
       </section>
     </div>
