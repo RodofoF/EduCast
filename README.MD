@@ -346,5 +346,19 @@ Fluxo de demonstração da entrega, com foco em sincronização inicial via serv
 * Demonstrar o objetivo principal do projeto: distribuição de conteúdo descentralizada, com suporte a ambientes de baixa ou nenhuma conectividade.
 
 
+# Fazer
+## Rodolfo
+* Substituir videos ao vivo por videos longos educativos sem copyright
+* Colocar o front-web em container
+* Pesquisar da build
+* Gerar QR Code no back
+* Organizar README
+
+## Wanderson
+* Criar o painel de thumbnails
+* Campos para editar ao vivo e ondemand
+* Verificar player hls no app
+* Tentar fazer build
+
 
 
