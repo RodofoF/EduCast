@@ -15,7 +15,7 @@ O EduCast é composto por **quatro camadas principais**:
 - 📦 Backend (API + Banco de Dados)
 - 📱 Frontend Mobile (App para alunos/professores)
 - 🌐 Frontend Web (Painel administrativo e gestão)
-- 📡 DevOps / Streaming (`educast_nginx_rtmp` para RTMP, HLS/DASH e MP4 on-demand)
+- 📡 DevOps / Streaming (`educast_nginx_rtmp` para RTMP, HLS/DASH)
 
 A proposta é permitir a distribuição de conteúdo educacional mesmo em cenários com baixa conectividade, utilizando CDN local e sincronização de dados.
 
@@ -28,52 +28,41 @@ O Brasil possui regiões com acesso limitado à internet, dificultando o ensino 
 ---
 
 ## 💡 Solução
+Para solucionar esse problema, propomos a plataforma **EduCast**.
 
-O EduCast permite:
+O EduCast é uma plataforma que tem como objetivo descentralizar o consumo de CDNs e entregar uma experiência de educação a distância similar a plataformas tradicionais, oferecendo integração entre backend, hardware (Placa TBS 6590), plataforma de gerência (frontend-web) e plataforma do usuário (frontend-mobile).
 
-- Distribuição de conteúdo via CDN local
-- Consumo de aulas mesmo com baixa conexão
-- Integração com transmissões ao vivo
-- Organização de conteúdo educacional
+A proposta do EduCast é oferecer conteúdo educacional através da intranet. Se possível, o servidor também deve ter acesso à internet para receber conteúdo externo e distribuí-lo na intranet da região.
+
+O projeto é inspirado em novas tecnologias como DVB-NIP, que se propõem a transmitir vídeos ao vivo e on-demand em padrões web.
+
+Em nossa proposta temos um servidor on-premise configurado com uma placa TBS 6590. O processo de instalação está em `/devops/tbsBoard/tbs6590_user_guide.pdf`. Essa placa permite aproveitar o sinal via satélite e, com a aplicação no container `educast_nginx_rtmp`, fazer a conversão do sinal e transmitir para os usuários da plataforma. Também é possível receber um canal de educação, armazenar e depois distribuir como on-demand para a região, além da transmissão ao vivo para usuários conectados ao servidor.
 
 ![Diagrama](EduCast.png)
----
 
+### Funcionalidades propostas
 
-## 🚀 Funcionalidades
+### DevOps
+Esse diretório é importante apenas para o desenvolvedor, não para o usuário.
+- Container para gerenciar os fluxos ao vivo gerados pela placa TBS ou por scripts internos de apoio ao desenvolvimento
 
-### ✔️ Atuais
+### Plataforma Backend
+- Servir de base integradora com hardware, mobile e web
+- Armazenar conteúdos on-demand
+- Hospedar DB e gerenciar com API
 
-- Transmissão de aulas ao vivo
-- Mural de comunicados
-- Consumo de conteúdo educacional
+#### Plataforma de gerência (Frontend Web)
+- Gerenciamento de links HLS do próprio servidor;
+- Reaproveitamento de conteúdo de streaming de outras plataformas: inserir links HLS ou DASH na plataforma para acesso de quem estiver conectado à intranet;
+- Upload de arquivos on-demand;
+- Envio de conteúdo de ensino como matérias, livros, reflexão e etc.
+- Gerenciamento dos usuários
 
-### 🔮 Futuras
-
-- Sistema de notas
-- Registro de presença via QR Code
-- Chat de vídeo local
-- Sistema de exercícios
-- Interação em tempo real entre alunos e professores
-
----
-
-## 📸 Demonstração do Projeto
-
-### 🌐 Frontend Web
-
-Tela de login do painel administrativo:
-
-![Login Web](./assets/web-login.PNG)
-
----
-
-### 📱 Frontend Mobile
-
-Tela de login do aplicativo:
-
-![Login Mobile](./assets/mobile-login.png)
-
+### Plataforma do usuário (Frontend Mobile)
+- Assistir vídeos ao vivo quando conectado à intranet;
+- Assistir e armazenar vídeos on-demand;
+- Consumir conteúdos de texto como matérias, livros, informativos e etc.
+- Compartilhamento dos dados do app através do QR gerado no app, inclusive offline entre dispositivos móveis
 ---
 
 ## 🧩 Estrutura do Projeto
@@ -87,8 +76,7 @@ EduCast/
 │   │   ├── models/               # Modelos de dados
 │   │   ├── routes/               # Rotas da API
 │   │   ├── middleware/           # Middleware (autenticação, etc)
-│   │   └── services/             # Serviços de negócio
-│   ├── tbsBoard/                # Instruções para preparação do servidor com a placa TBS
+│   │   └── swagger/              # Definições da documentação da API
 │   ├── mysql_data/               # Dados do banco de dados
 │   ├── uploads/                  # Arquivos enviados
 │   ├── docker-compose.yml        # Orquestração de containers
@@ -126,72 +114,45 @@ EduCast/
 │   ├── nginx.conf                # Configuração RTMP + HLS + DASH + on-demand
 │   ├── live/                     # Vídeos locais usados para simular canais ao vivo
 │   ├── ondemand/                 # Biblioteca MP4 servida sob demanda
+│   ├── tbsBoard/                 # Instruções para preparação do servidor com a placa TBS
 │   └── README.MD                 # Documentação do container de streaming
 │
 ├── 🎨 assets/                    # Imagens e recursos visuais
 ├── README.MD                     # Documentação principal
 ```
-
-**Descrição dos componentes principais:**
-
-| Componente | Descrição | Tecnologia |
-|-----------|-----------|-----------|
-| **Backend** | API RESTful, autenticação, banco de dados | Node.js, Express, MySQL, JWT |
-| **Frontend Mobile** | Aplicativo para alunos e professores | React Native, TypeScript, Expo |
-| **Frontend Web** | Painel administrativo e gestão | React, Vite, TailwindCSS |
-| **DevOps / Streaming** | Container `educast_nginx_rtmp` para RTMP, HLS/DASH ao vivo e MP4 on-demand | Docker, Nginx RTMP, FFmpeg |
-
 ---
 
 ## 🛠️ Tecnologias
 
-### Backend
-- Node.js
-- Express
-- MySQL
-- Sequelize
-- JWT
-- Swagger
-- Docker
-
-### Frontend Mobile
-- React Native + Expo
-- TypeScript
-- Axios
-- Zustand
-- AsyncStorage
-
-### Frontend Web
-- React (Vite)
-- React Router
-- Axios
-- Zustand
-- Tailwind CSS
+- Backend: Node.js, Express, MySQL, Sequelize, JWT, Swagger e Docker
+- Frontend Mobile: React Native (Expo), TypeScript, Axios, Zustand e AsyncStorage
+- Frontend Web: React (Vite), React Router, Axios, Zustand e Tailwind CSS
 
 ---
 
-# ⚙️ Como rodar o projeto
+# ⚙️ Como executar o projeto
 
-## Streaming (`educast_nginx_rtmp`) — subir primeiro
+## Streaming (`educast_nginx_rtmp`)
 
-Antes do backend e dos frontends, inicie o container de streaming no diretório `devops`:
+1. Como primeiro passo, inicie o container de streaming no diretório `devops`:
 
 ```bash
 cd devops
 docker compose up --build -d
 ```
+Em ambiente local de desenvolvimento/teste, execute o script abaixo para simular vídeo ao vivo em loop.
+No servidor preparado para a demo, essa simulação não é necessária.
 
-Esse passo sobe o container `educast_nginx_rtmp`, responsável por:
-
-- receber/publicar RTMP na porta `1935`
-- gerar saídas ao vivo em HLS e DASH
-- servir vídeos MP4 da pasta `ondemand` pela porta `9090`
+```bash
+docker exec educast_nginx_rtmp /usr/local/bin/start-streaming.sh
+```
 
 ## 🔧 Backend
 
 1. Após o streaming estar ativo, execute o comando docker no diretório `backend`
+
 ```bash
-docker compose up --build
+docker compose up --build -d
 ```
 Omita a flag `-d` para conseguir visualizar os logs
 
@@ -200,165 +161,69 @@ Omita a flag `-d` para conseguir visualizar os logs
 * DB PhpAdmin: http://localhost:8080
 
 3. Usuários
-Na primeira build ou inicialização do projeto existe o usuário `admin` default para gerenciar o projeto. O primeiro acesso pode ser acessado por
-* Login: admin@email.com.br
-* Password: educastadmin
+Na primeira build ou inicialização do projeto, existem os usuários padrão `admin` e `student` para gerenciar o projeto. O primeiro acesso pode ser feito por:
+
+* **Login:** admin@email.com.br
+* **Password:** educastadmin
+
+* **Login:** student@email.com.br
+* **Password:** educaststudent
 
 ---
 
 ## 📱 Frontend Mobile (Expo)
 
+1. Execute o comando abaixo no diretório `frontend-mobile`
+
 ```bash
-  cd frontend-mobile
   npm install
   npx expo start
 ```
-* 1=Admin, 2=Teacher, 3=Student, 4=School 1
+
 Escaneie o QR Code com o Expo Go para ter acesso ao app em desenvolvimento.
 
 ---
 
 ## 🌐 Frontend Web
+1. Execute o comando abaixo no diretório `frontend-web`
 
 ```bash
-  cd frontend-web
-  npm install
-  npm run dev
+  docker compose up --build
 ```
-Para acessar o frontend web **http://localhost:5173**
+
+Para acessar o frontend web via Docker: **http://localhost:8081**
 
 ---
 
 ## 🔐 Variáveis de ambiente
 
-Cada projeto possui sua próprias variáveis, no momento elas estão expostas para facilitar o desenvolvimento.
-```bash
-#Backend
-PORT=3000
+Cada projeto possui suas próprias variáveis. No momento, elas estão expostas para facilitar o desenvolvimento.
 
-# Banco
-DB_HOST=db
-DB_USER=educast
-DB_PASSWORD=educast
-DB_NAME=educast
-DB_PORT=3306
-
-# Segurança
-JWT_SECRET=educastsecret
-
-# Admin padrão
-ADMIN_DEFAULT_USERNAME=admin
-ADMIN_DEFAULT_EMAIL=admin@email.com.br
-ADMIN_DEFAULT_PASSWORD=educastadmin
-
-# Swagger (ajustado para acessar via celular também)
-SWAGGER_PROTOCOL=http
-SWAGGER_HOST=192.168.4.51 ##usar o endereço IP da máquina
-SWAGGER_PORT=3000
-```
-
-```bash
-#Mobile
-EXPO_PUBLIC_API_URL=http://SEU_IP_MAQUINA:3000
-```
-```bash
-#Web
-VITE_API_URL=http://localhost:3000
-```
 ⚠️ Observações importantes
 
-Para acessar pelo celular, utilize o IP da máquina (não localhost)
-Certifique-se que backend e frontend estão na mesma rede
-Expo Go deve estar atualizado
+Altere as variáveis que estão em localhost para o IP do equipamento utilizado para teste, algumas aplicações podem não funcionar devido a esse conflito
 
 ---
-## Testes
+## Mais informações do projeto
 
-Atualmente, os testes automatizados do projeto estão concentrados no backend, na pasta `backend/__tests__`.
+Para não deixar o README.MD extenso, cada diretório possui um arquivo para orientar e trazer informações mais detalhadas de cada etapa do projeto.
 
-Para executar os testes:
+---
 
-```bash
-cd backend
-npm install
-npm test
-```
-Para executar somente um bloco de teste, indique o arquivo que deseja testart, no meu exemplo irei testar tudo relacionado a contents, que está em meu arquivo **contents.test.js**
+## Aprendizados 
 
-```bash
-npm test -- contents.test.js
-``` 
-
-O script configurado executa o Jest em ambiente de teste:
-
-```bash
-NODE_ENV=test jest --runInBand
-```
-
-Arquivos de teste atuais:
-- `backend/__tests__/app.test.js`
-- `backend/__tests__/auth.test.js`
-- `backend/__tests__/contents.test.js`
+## Dificuldades e pendências
 
 
-## Próximos passos
-### Backend
-* Preparar o backend para interagir com o servidor e a placa, permitindo integração via API com outros sistemas
-* Criar script para mocked data,
-  * Deve associar o fluxo ao vivo;
-  * Deve fazer upload dos conteudos ondemand
-  * Fazer upload de contents
-  * Criar usuários
-### Frontend
+---
 
+## Autores
+* **Nome**: Rodolfo Ferreira Fernandes
+* **E-mail**: rdf.8888@gmail.com
+* **RM** 365194
 
-
-### Testes
-* Testar a aplicação diretamente no servidor de streaming para validar os fluxos ao vivo e compartilhamento de informaçoes
-* Fazer a build do app para fazer o teste real
-
-## Entrega
-Fluxo de demonstração da entrega, com foco em sincronização inicial via servidor e compartilhamento local sem dependência de internet.
-
-### 1. Preparação do cenário
-* Realizar o deploy no servidor de streaming com a placa.
-* Posicionar um notebook ao lado do servidor para simular o ambiente de gestão do professor.
-* Preparar dois celulares com o aplicativo instalado e sem conteúdos sincronizados inicialmente.
-
-### 2. Sincronização inicial com o servidor
-* No celular 1, escanear o QR Code de acesso ao Wi-Fi da mesma rede do servidor de streaming.
-* Após entrar na rede, o aplicativo atualiza os conteúdos, baixa os materiais on-demand e exibe o conteúdo ao vivo.
-* Desconectar o celular 1 do Wi-Fi e demonstrar que os conteúdos continuam disponíveis offline.
-
-### 3. Compartilhamento descentralizado entre celulares
-* Com o celular 1 fora da rede do servidor, ativar o hotspot para que ele passe a atuar como ponto de distribuição local.
-* Conectar o celular 2 ao hotspot do celular 1.
-* No aplicativo do celular 1, acessar a área de compartilhamento e gerar o QR Code de transferência.
-
-### 4. Como o QR Code funciona nesse fluxo
-* O QR Code contém variáveis de configuração da origem dos conteúdos, como `SERVER_IP`.
-* Na sincronização inicial, o celular 1 lê um QR Code cujo `SERVER_IP` aponta para o servidor de streaming.
-* No compartilhamento local, o celular 2 lê o QR Code gerado pelo celular 1, e então interpreta o `SERVER_IP` como o endereço do próprio celular 1.
-* Com isso, o celular 2 passa a baixar os conteúdos diretamente do celular 1, sem precisar acessar o servidor central.
-
-### 5. Resultado esperado da entrega
-* Validar que um dispositivo sem interação prévia com o servidor (celular 2) consegue receber os conteúdos por proximidade.
-* Demonstrar o objetivo principal do projeto: distribuição de conteúdo descentralizada, com suporte a ambientes de baixa ou nenhuma conectividade.
-
-
-# Fazer
-## Rodolfo
-* Substituir videos ao vivo por videos longos educativos sem copyright
-* Colocar o front-web em container x
-* Pesquisar da build x
-* Gerar QR Code no back x
-* Organizar README
-
-## Wanderson
-* Criar o painel de thumbnails
-* Campos para editar ao vivo e ondemand
-* Verificar player hls no app
-* Tentar fazer build do mobile
-
+* **Nome**: Wanderson
+* **E-mail**: 
+* **RM** 
 
 
