@@ -1,5 +1,11 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { FlatList, Text, TextInput, TouchableOpacity, View } from "react-native";
+import {
+  FlatList,
+  TextInput,
+  TouchableOpacity,
+  View,
+  Text,
+} from "react-native";
 import type { BottomTabScreenProps } from "@react-navigation/bottom-tabs";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { Ionicons } from "@expo/vector-icons";
@@ -42,20 +48,15 @@ export default function SearchScreen({ navigation }: Props) {
   }, [query]);
 
   const headerDescription = useMemo(() => {
-    if (!query.trim()) return "Busque por título, categoria, professor ou tipo de conteúdo.";
+    if (!query.trim()) {
+      return "Busque por título, categoria, professor ou tipo de conteúdo.";
+    }
     return `${items.length} resultado(s) encontrados para “${query}”.`;
   }, [items.length, query]);
 
   return (
-    <AppShell>
-      <View style={{ flex: 1, paddingHorizontal: 20, paddingTop: 14 }}>
-        <Text style={{ color: theme.colors.text, fontSize: 30, fontWeight: "900", marginBottom: 8 }}>
-          Buscar
-        </Text>
-        <Text style={{ color: theme.colors.textMuted, fontSize: 14, lineHeight: 21, marginBottom: 18 }}>
-          {headerDescription}
-        </Text>
-
+    <AppShell showHeader title="Buscar" subtitle={headerDescription}>
+      <View style={{ flex: 1, paddingHorizontal: 20 }}>
         <View
           style={{
             flexDirection: "row",
@@ -70,17 +71,30 @@ export default function SearchScreen({ navigation }: Props) {
             marginBottom: 16,
           }}
         >
-          <Ionicons name="search-outline" size={18} color={theme.colors.textSoft} />
+          <Ionicons
+            name="search-outline"
+            size={18}
+            color={theme.colors.textSoft}
+          />
           <TextInput
             value={query}
             onChangeText={setQuery}
             placeholder="Pesquisar conteúdos"
             placeholderTextColor={theme.colors.textSoft}
-            style={{ flex: 1, color: theme.colors.text, fontSize: 15, paddingVertical: 12 }}
+            style={{
+              flex: 1,
+              color: theme.colors.text,
+              fontSize: 15,
+              paddingVertical: 12,
+            }}
           />
           {!!query && (
             <TouchableOpacity onPress={() => setQuery("")}>
-              <Ionicons name="close-circle" size={18} color={theme.colors.textSoft} />
+              <Ionicons
+                name="close-circle"
+                size={18}
+                color={theme.colors.textSoft}
+              />
             </TouchableOpacity>
           )}
         </View>
@@ -91,6 +105,7 @@ export default function SearchScreen({ navigation }: Props) {
           numColumns={2}
           columnWrapperStyle={{ justifyContent: "space-between", marginBottom: 14 }}
           showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingBottom: 28, flexGrow: 1 }}
           ListHeaderComponent={
             <View style={{ marginBottom: 18 }}>
               <FlatList
@@ -111,7 +126,15 @@ export default function SearchScreen({ navigation }: Props) {
                       borderColor: theme.colors.cardBorder,
                     }}
                   >
-                    <Text style={{ color: theme.colors.text, fontSize: 12, fontWeight: "700" }}>{item}</Text>
+                    <Text
+                      style={{
+                        color: theme.colors.text,
+                        fontSize: 12,
+                        fontWeight: "700",
+                      }}
+                    >
+                      {item}
+                    </Text>
                   </TouchableOpacity>
                 )}
               />
@@ -128,7 +151,11 @@ export default function SearchScreen({ navigation }: Props) {
             )
           }
           renderItem={({ item }) => (
-            <MediaCard item={item} onPress={() => navigation.navigate("Details", { item })} compact />
+            <MediaCard
+              item={item}
+              onPress={() => navigation.navigate("Details", { item })}
+              compact
+            />
           )}
         />
       </View>

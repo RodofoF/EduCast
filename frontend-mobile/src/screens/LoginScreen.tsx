@@ -8,6 +8,7 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  Image,
 } from "react-native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import AppShell from "../components/AppShell";
@@ -74,6 +75,39 @@ export default function LoginScreen({ navigation }: Props) {
             <View style={{ paddingTop: 8, marginBottom: 24 }}>
               <View
                 style={{
+                  alignItems: "center",
+                  marginBottom: 18,
+                }}
+              >
+                <View
+                  style={{
+                    width: 92,
+                    height: 92,
+                    borderRadius: 28,
+                    overflow: "hidden",
+                    backgroundColor: "#ffffff",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    shadowColor: "#000",
+                    shadowOpacity: 0.25,
+                    shadowRadius: 10,
+                    shadowOffset: { width: 0, height: 6 },
+                    elevation: 8,
+                  }}
+                >
+                  <Image
+                    source={require("../../assets/logo-educast.png")}
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      resizeMode: "contain",
+                    }}
+                  />
+                </View>
+              </View>
+
+              <View
+                style={{
                   alignSelf: "flex-start",
                   backgroundColor: "rgba(37, 99, 235, 0.18)",
                   borderWidth: 1,
@@ -84,12 +118,27 @@ export default function LoginScreen({ navigation }: Props) {
                   marginBottom: 18,
                 }}
               >
-                <Text style={{ color: "#bfdbfe", fontSize: 12, fontWeight: "700", letterSpacing: 0.4 }}>
+                <Text
+                  style={{
+                    color: "#bfdbfe",
+                    fontSize: 12,
+                    fontWeight: "700",
+                    letterSpacing: 0.4,
+                  }}
+                >
                   EduCast Mobile
                 </Text>
               </View>
 
-              <Text style={{ color: theme.colors.text, fontSize: 40, fontWeight: "800", letterSpacing: -1, marginBottom: 14 }}>
+              <Text
+                style={{
+                  color: theme.colors.text,
+                  fontSize: 40,
+                  fontWeight: "800",
+                  letterSpacing: -1,
+                  marginBottom: 14,
+                }}
+              >
                 EduCast
               </Text>
 
@@ -115,7 +164,8 @@ export default function LoginScreen({ navigation }: Props) {
                   marginBottom: 20,
                 }}
               >
-                Experiência visual inspirada em streaming, com foco em descoberta, continuidade e navegação simples.
+                Experiência visual inspirada em streaming, com foco em descoberta,
+                continuidade e navegação simples.
               </Text>
 
               <View style={{ flexDirection: "row", gap: 12 }}>
@@ -133,10 +183,25 @@ export default function LoginScreen({ navigation }: Props) {
                 borderColor: theme.colors.cardBorder,
               }}
             >
-              <Text style={{ color: theme.colors.text, fontSize: 24, fontWeight: "800", marginBottom: 6 }}>
+              <Text
+                style={{
+                  color: theme.colors.text,
+                  fontSize: 24,
+                  fontWeight: "800",
+                  marginBottom: 6,
+                }}
+              >
                 Entrar
               </Text>
-              <Text style={{ color: theme.colors.textMuted, fontSize: 14, lineHeight: 21, marginBottom: 18 }}>
+
+              <Text
+                style={{
+                  color: theme.colors.textMuted,
+                  fontSize: 14,
+                  lineHeight: 21,
+                  marginBottom: 18,
+                }}
+              >
                 Use seu e-mail institucional para acessar o aplicativo.
               </Text>
 
@@ -165,8 +230,18 @@ export default function LoginScreen({ navigation }: Props) {
                 />
               </Field>
 
-              <TouchableOpacity onPress={() => setSecure((prev) => !prev)} activeOpacity={0.8}>
-                <Text style={{ color: "#93c5fd", fontSize: 13, fontWeight: "700", marginBottom: 14 }}>
+              <TouchableOpacity
+                onPress={() => setSecure((prev) => !prev)}
+                activeOpacity={0.8}
+              >
+                <Text
+                  style={{
+                    color: "#93c5fd",
+                    fontSize: 13,
+                    fontWeight: "700",
+                    marginBottom: 14,
+                  }}
+                >
                   {secure ? "Mostrar senha" : "Ocultar senha"}
                 </Text>
               </TouchableOpacity>
@@ -182,7 +257,11 @@ export default function LoginScreen({ navigation }: Props) {
                     marginBottom: 14,
                   }}
                 >
-                  <Text style={{ color: "#fecaca", fontSize: 13, lineHeight: 19 }}>{error}</Text>
+                  <Text
+                    style={{ color: "#fecaca", fontSize: 13, lineHeight: 19 }}
+                  >
+                    {error}
+                  </Text>
                 </View>
               )}
 
@@ -203,14 +282,27 @@ export default function LoginScreen({ navigation }: Props) {
                 {loading ? (
                   <ActivityIndicator color={theme.colors.primaryDark} />
                 ) : (
-                  <Text style={{ color: theme.colors.primaryDark, fontSize: 15, fontWeight: "800" }}>
+                  <Text
+                    style={{
+                      color: theme.colors.primaryDark,
+                      fontSize: 15,
+                      fontWeight: "800",
+                    }}
+                  >
                     Acessar plataforma
                   </Text>
                 )}
               </TouchableOpacity>
 
-              <Text style={{ color: theme.colors.textSoft, fontSize: 13, lineHeight: 20 }}>
-                Educação com experiência digital mais fluida, acessível e preparada para crescer.
+              <Text
+                style={{
+                  color: theme.colors.textSoft,
+                  fontSize: 13,
+                  lineHeight: 20,
+                }}
+              >
+                Educação com experiência digital mais fluida, acessível e
+                preparada para crescer.
               </Text>
             </View>
           </View>
@@ -220,10 +312,25 @@ export default function LoginScreen({ navigation }: Props) {
   );
 }
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
+function Field({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) {
   return (
     <View style={{ marginBottom: 14 }}>
-      <Text style={{ color: theme.colors.text, fontSize: 13, fontWeight: "700", marginBottom: 8 }}>{label}</Text>
+      <Text
+        style={{
+          color: theme.colors.text,
+          fontSize: 13,
+          fontWeight: "700",
+          marginBottom: 8,
+        }}
+      >
+        {label}
+      </Text>
       {children}
     </View>
   );
@@ -241,8 +348,26 @@ function MiniCard({ label, value }: { label: string; value: string }) {
         borderColor: "rgba(59, 130, 246, 0.18)",
       }}
     >
-      <Text style={{ color: "#93c5fd", fontSize: 12, fontWeight: "700", marginBottom: 6 }}>{label}</Text>
-      <Text style={{ color: theme.colors.text, fontSize: 14, fontWeight: "700", lineHeight: 19 }}>{value}</Text>
+      <Text
+        style={{
+          color: "#93c5fd",
+          fontSize: 12,
+          fontWeight: "700",
+          marginBottom: 6,
+        }}
+      >
+        {label}
+      </Text>
+      <Text
+        style={{
+          color: theme.colors.text,
+          fontSize: 14,
+          fontWeight: "700",
+          lineHeight: 19,
+        }}
+      >
+        {value}
+      </Text>
     </View>
   );
 }

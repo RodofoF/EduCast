@@ -7,10 +7,13 @@ import {
   View,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import type { BottomTabScreenProps } from "@react-navigation/bottom-tabs";
+import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import AppShell from "../components/AppShell";
 import EmptyState from "../components/EmptyState";
 import LoadingState from "../components/LoadingState";
 import { getContents } from "../services/content";
+import type { MainTabParamList, RootStackParamList } from "../navigation/types";
 import type { ContentItem } from "../types/content";
 import { theme } from "../utils/theme";
 
@@ -40,9 +43,13 @@ function PostBadge({
         paddingHorizontal: 12,
         paddingVertical: 7,
         borderRadius: 999,
-        backgroundColor: isAccent ? "rgba(96,165,250,0.16)" : "rgba(255,255,255,0.08)",
+        backgroundColor: isAccent
+          ? "rgba(96,165,250,0.16)"
+          : "rgba(255,255,255,0.08)",
         borderWidth: 1,
-        borderColor: isAccent ? "rgba(96,165,250,0.30)" : theme.colors.cardBorder,
+        borderColor: isAccent
+          ? "rgba(96,165,250,0.30)"
+          : theme.colors.cardBorder,
       }}
     >
       <Text
@@ -58,102 +65,161 @@ function PostBadge({
   );
 }
 
-function PostCard({ item }: { item: ContentItem }) {
+type Props = BottomTabScreenProps<MainTabParamList, "MuralTab"> & {
+  navigation: BottomTabScreenProps<MainTabParamList, "MuralTab">["navigation"] &
+    NativeStackScreenProps<RootStackParamList>["navigation"];
+};
+
+function PostCard({
+  item,
+  onPress,
+}: {
+  item: ContentItem;
+  onPress: () => void;
+}) {
   const author =
-    item.user?.username || item.user?.email || (item.user_id ? `Usuário #${item.user_id}` : "EduCast");
+    item.user?.username ||
+    item.user?.email ||
+    (item.user_id ? `Usuário #${item.user_id}` : "EduCast");
 
   return (
-    <View
-      style={{
-        backgroundColor: theme.colors.backgroundAlt,
-        borderRadius: 24,
-        borderWidth: 1,
-        borderColor: theme.colors.cardBorder,
-        padding: 18,
-        marginBottom: 14,
-      }}
-    >
-      <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8, marginBottom: 14 }}>
-        <PostBadge label={item.category || "Avisos"} variant="accent" />
-        <PostBadge label={item.theme || "Geral"} />
-      </View>
-
-      <Text
-        style={{
-          color: theme.colors.text,
-          fontSize: 20,
-          fontWeight: "900",
-          letterSpacing: -0.4,
-          marginBottom: item.subtitle ? 6 : 10,
-        }}
-      >
-        {item.title}
-      </Text>
-
-      {!!item.subtitle && (
-        <Text
-          style={{
-            color: theme.colors.textMuted,
-            fontSize: 14,
-            lineHeight: 20,
-            marginBottom: 12,
-          }}
-        >
-          {item.subtitle}
-        </Text>
-      )}
-
-      <Text
-        style={{
-          color: theme.colors.text,
-          fontSize: 15,
-          lineHeight: 24,
-        }}
-      >
-        {item.content}
-      </Text>
-
+    <TouchableOpacity activeOpacity={0.9} onPress={onPress}>
       <View
         style={{
-          marginTop: 16,
-          paddingTop: 14,
-          borderTopWidth: 1,
-          borderTopColor: theme.colors.cardBorder,
-          flexDirection: "row",
-          alignItems: "center",
-          justifyContent: "space-between",
-          gap: 10,
+          backgroundColor: theme.colors.backgroundAlt,
+          borderRadius: 24,
+          borderWidth: 1,
+          borderColor: theme.colors.cardBorder,
+          padding: 18,
+          marginBottom: 14,
         }}
       >
-        <View style={{ flexDirection: "row", alignItems: "center", gap: 8, flex: 1 }}>
-          <Ionicons name="person-circle-outline" size={16} color={theme.colors.textSoft} />
+        <View
+          style={{
+            flexDirection: "row",
+            flexWrap: "wrap",
+            gap: 8,
+            marginBottom: 14,
+          }}
+        >
+          <PostBadge label={item.category || "Avisos"} variant="accent" />
+          <PostBadge label={item.theme || "Geral"} />
+        </View>
+
+        <Text
+          style={{
+            color: theme.colors.text,
+            fontSize: 20,
+            fontWeight: "900",
+            letterSpacing: -0.4,
+            marginBottom: item.subtitle ? 6 : 10,
+          }}
+        >
+          {item.title}
+        </Text>
+
+        {!!item.subtitle && (
           <Text
-            numberOfLines={1}
             style={{
-              color: theme.colors.textSoft,
-              fontSize: 12,
-              fontWeight: "700",
+              color: theme.colors.textMuted,
+              fontSize: 14,
+              lineHeight: 20,
+              marginBottom: 12,
+            }}
+          >
+            {item.subtitle}
+          </Text>
+        )}
+
+        <Text
+          numberOfLines={4}
+          style={{
+            color: theme.colors.text,
+            fontSize: 15,
+            lineHeight: 24,
+          }}
+        >
+          {item.content}
+        </Text>
+
+        <View
+          style={{
+            marginTop: 16,
+            paddingTop: 14,
+            borderTopWidth: 1,
+            borderTopColor: theme.colors.cardBorder,
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 10,
+          }}
+        >
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              gap: 8,
               flex: 1,
             }}
           >
-            {author}
-          </Text>
-        </View>
-
-        {!!item.createdAt && (
-          <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
-            <Ionicons name="time-outline" size={14} color={theme.colors.textSoft} />
-            <Text style={{ color: theme.colors.textSoft, fontSize: 12, fontWeight: "700" }}>
-              {formatDate(item.createdAt)}
+            <Ionicons
+              name="person-circle-outline"
+              size={16}
+              color={theme.colors.textSoft}
+            />
+            <Text
+              numberOfLines={1}
+              style={{
+                color: theme.colors.textSoft,
+                fontSize: 12,
+                fontWeight: "700",
+                flex: 1,
+              }}
+            >
+              {author}
             </Text>
           </View>
-        )}
+
+          {!!item.createdAt && (
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+              <Ionicons
+                name="time-outline"
+                size={14}
+                color={theme.colors.textSoft}
+              />
+              <Text
+                style={{
+                  color: theme.colors.textSoft,
+                  fontSize: 12,
+                  fontWeight: "700",
+                }}
+              >
+                {formatDate(item.createdAt)}
+              </Text>
+            </View>
+          )}
+        </View>
+
+        <View
+          style={{
+            marginTop: 14,
+            alignSelf: "flex-start",
+            flexDirection: "row",
+            alignItems: "center",
+            gap: 8,
+          }}
+        >
+          <Text style={{ color: "#bfdbfe", fontSize: 12, fontWeight: "800" }}>
+            Ler publicação
+          </Text>
+          <Ionicons name="arrow-forward" size={14} color="#bfdbfe" />
+        </View>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 }
 
-export default function MuralScreen() {
+export default function MuralScreen({ navigation }: Props) {
   const [posts, setPosts] = useState<ContentItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -181,18 +247,30 @@ export default function MuralScreen() {
 
   if (loading) {
     return (
-      <AppShell>
+      <AppShell
+        showHeader
+        title="Mural"
+        subtitle="Avisos, recados e comunicados publicados por professores e administradores."
+      >
         <LoadingState label="Carregando publicações do mural..." />
       </AppShell>
     );
   }
 
   return (
-    <AppShell>
+    <AppShell
+      showHeader
+      title="Mural"
+      subtitle="Avisos, recados e comunicados publicados por professores e administradores."
+    >
       <FlatList
         data={posts}
         keyExtractor={(item) => String(item.id)}
-        contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 18, paddingBottom: 32, flexGrow: 1 }}
+        contentContainerStyle={{
+          paddingHorizontal: 20,
+          paddingBottom: 32,
+          flexGrow: 1,
+        }}
         showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl
@@ -205,63 +283,46 @@ export default function MuralScreen() {
           />
         }
         ListHeaderComponent={
-          <View style={{ marginBottom: 20 }}>
-            <Text
+          error ? (
+            <View
               style={{
-                color: theme.colors.text,
-                fontSize: 28,
-                fontWeight: "900",
-                letterSpacing: -0.8,
-                marginBottom: 6,
+                marginBottom: 18,
+                backgroundColor: "rgba(248,113,113,0.12)",
+                borderRadius: 18,
+                borderWidth: 1,
+                borderColor: "rgba(248,113,113,0.20)",
+                padding: 14,
               }}
             >
-              Mural
-            </Text>
+              <Text
+                style={{ color: "#fecaca", fontSize: 13, fontWeight: "700" }}
+              >
+                {error}
+              </Text>
 
-            <Text
-              style={{
-                color: theme.colors.textMuted,
-                fontSize: 14,
-                lineHeight: 20,
-                marginBottom: error ? 14 : 0,
-              }}
-            >
-              Avisos, recados e comunicados publicados por professores e administradores.
-            </Text>
-
-            {error ? (
-              <View
+              <TouchableOpacity
+                onPress={() => loadPosts()}
                 style={{
-                  marginTop: 14,
-                  backgroundColor: "rgba(248,113,113,0.12)",
-                  borderRadius: 18,
-                  borderWidth: 1,
-                  borderColor: "rgba(248,113,113,0.20)",
-                  padding: 14,
+                  marginTop: 10,
+                  alignSelf: "flex-start",
+                  flexDirection: "row",
+                  alignItems: "center",
+                  gap: 8,
+                  backgroundColor: "rgba(255,255,255,0.08)",
+                  paddingHorizontal: 12,
+                  paddingVertical: 10,
+                  borderRadius: 999,
                 }}
               >
-                <Text style={{ color: "#fecaca", fontSize: 13, fontWeight: "700" }}>{error}</Text>
-
-                <TouchableOpacity
-                  onPress={() => loadPosts()}
-                  style={{
-                    marginTop: 10,
-                    alignSelf: "flex-start",
-                    flexDirection: "row",
-                    alignItems: "center",
-                    gap: 8,
-                    backgroundColor: "rgba(255,255,255,0.08)",
-                    paddingHorizontal: 12,
-                    paddingVertical: 10,
-                    borderRadius: 999,
-                  }}
+                <Ionicons name="refresh-outline" size={16} color="#ffffff" />
+                <Text
+                  style={{ color: "#ffffff", fontWeight: "800", fontSize: 12 }}
                 >
-                  <Ionicons name="refresh-outline" size={16} color="#ffffff" />
-                  <Text style={{ color: "#ffffff", fontWeight: "800", fontSize: 12 }}>Tentar novamente</Text>
-                </TouchableOpacity>
-              </View>
-            ) : null}
-          </View>
+                  Tentar novamente
+                </Text>
+              </TouchableOpacity>
+            </View>
+          ) : null
         }
         ListEmptyComponent={
           <EmptyState
@@ -270,7 +331,12 @@ export default function MuralScreen() {
             icon="megaphone-outline"
           />
         }
-        renderItem={({ item }) => <PostCard item={item} />}
+        renderItem={({ item }) => (
+          <PostCard
+            item={item}
+            onPress={() => navigation.navigate("MuralPost", { post: item })}
+          />
+        )}
       />
     </AppShell>
   );

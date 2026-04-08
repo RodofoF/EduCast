@@ -27,14 +27,21 @@ export default function ProfileScreen({ navigation }: Props) {
     useCallback(() => {
       let active = true;
 
-      Promise.all([getCatalogSections(), searchCatalog("")]).then(([sections, allItems]) => {
-        if (!active) return;
+      Promise.all([getCatalogSections(), searchCatalog("")]).then(
+        ([sections, allItems]) => {
+          if (!active) return;
 
-        const progressItems = allItems.filter((item) => (item.progress ?? 0) > 0 && item.type === "VOD");
-        setContinueWatching(
-          progressItems.length > 0 ? progressItems : sections.flatMap((section) => section.items).slice(0, 4)
-        );
-      });
+          const progressItems = allItems.filter(
+            (item) => (item.progress ?? 0) > 0 && item.type === "VOD"
+          );
+
+          setContinueWatching(
+            progressItems.length > 0
+              ? progressItems
+              : sections.flatMap((section) => section.items).slice(0, 4)
+          );
+        }
+      );
 
       return () => {
         active = false;
@@ -43,14 +50,22 @@ export default function ProfileScreen({ navigation }: Props) {
   );
 
   return (
-    <AppShell>
+    <AppShell
+      showHeader
+      title="Perfil"
+      subtitle="Suas informações, acesso e histórico recente."
+    >
       <FlatList
         data={continueWatching}
         keyExtractor={(item) => item.id}
         horizontal={false}
         numColumns={2}
         columnWrapperStyle={{ justifyContent: "space-between", marginBottom: 14 }}
-        contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 16, paddingBottom: 32 }}
+        contentContainerStyle={{
+          paddingHorizontal: 20,
+          paddingBottom: 32,
+          flexGrow: 1,
+        }}
         showsVerticalScrollIndicator={false}
         ListHeaderComponent={
           <View>
@@ -78,23 +93,59 @@ export default function ProfileScreen({ navigation }: Props) {
                 <Ionicons name="person" size={24} color="#ffffff" />
               </View>
 
-              <Text style={{ color: theme.colors.text, fontSize: 24, fontWeight: "900", marginBottom: 6 }}>
+              <Text
+                style={{
+                  color: theme.colors.text,
+                  fontSize: 24,
+                  fontWeight: "900",
+                  marginBottom: 6,
+                }}
+              >
                 {user?.username || "Usuário EduCast"}
               </Text>
-              <Text style={{ color: theme.colors.textMuted, fontSize: 14, marginBottom: 18 }}>
+
+              <Text
+                style={{
+                  color: theme.colors.textMuted,
+                  fontSize: 14,
+                  marginBottom: 18,
+                }}
+              >
                 {user?.email || "Conta não identificada"}
               </Text>
 
-              <View style={{ flexDirection: "row", gap: 10, flexWrap: "wrap", marginBottom: 18 }}>
-                <InfoPill label="Perfil" value="Professor" icon="school-outline" />
-                <InfoPill label="Grupo" value={`${user?.userGroups?.length || 0} acesso(s)`} icon="layers-outline" />
-                <InfoPill label="Status" value="Ativo" icon="checkmark-circle-outline" />
+              <View
+                style={{
+                  flexDirection: "row",
+                  gap: 10,
+                  flexWrap: "wrap",
+                  marginBottom: 18,
+                }}
+              >
+                <InfoPill
+                  label="Perfil"
+                  value="Professor"
+                  icon="school-outline"
+                />
+                <InfoPill
+                  label="Grupo"
+                  value={`${user?.userGroups?.length || 0} acesso(s)`}
+                  icon="layers-outline"
+                />
+                <InfoPill
+                  label="Status"
+                  value="Ativo"
+                  icon="checkmark-circle-outline"
+                />
               </View>
 
               <TouchableOpacity
                 onPress={async () => {
                   await logout();
-                  navigation.getParent()?.reset({ index: 0, routes: [{ name: "Login" as never }] });
+                  navigation.getParent()?.reset({
+                    index: 0,
+                    routes: [{ name: "Login" as never }],
+                  });
                 }}
                 style={{
                   flexDirection: "row",
@@ -107,12 +158,21 @@ export default function ProfileScreen({ navigation }: Props) {
                 }}
               >
                 <Ionicons name="log-out-outline" size={18} color="#ffffff" />
-                <Text style={{ color: theme.colors.text, fontWeight: "800" }}>Encerrar sessão</Text>
+                <Text style={{ color: theme.colors.text, fontWeight: "800" }}>
+                  Encerrar sessão
+                </Text>
               </TouchableOpacity>
             </View>
 
             <View style={{ marginBottom: 16 }}>
-              <Text style={{ color: theme.colors.text, fontSize: 22, fontWeight: "800", marginBottom: 4 }}>
+              <Text
+                style={{
+                  color: theme.colors.text,
+                  fontSize: 22,
+                  fontWeight: "800",
+                  marginBottom: 4,
+                }}
+              >
                 Continue assistindo
               </Text>
               <Text style={{ color: theme.colors.textSoft, fontSize: 13 }}>
@@ -129,7 +189,11 @@ export default function ProfileScreen({ navigation }: Props) {
           />
         }
         renderItem={({ item }) => (
-          <MediaCard item={item} onPress={() => navigation.navigate("Details", { item })} compact />
+          <MediaCard
+            item={item}
+            onPress={() => navigation.navigate("Details", { item })}
+            compact
+          />
         )}
       />
     </AppShell>
