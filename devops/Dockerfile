@@ -14,4 +14,6 @@ RUN chmod +x /usr/local/bin/start-streaming.sh /opt/live/live.sh
 
 EXPOSE 1935 80
 
-CMD ["/bin/sh", "/usr/local/bin/start-streaming.sh"]
+CMD ["nginx", "-g", "daemon off;"]
+# CMD ["/bin/sh", "/usr/local/bin/start-streaming.sh"]
+# docker exec educast_nginx_rtmp /usr/local/bin/start-streaming.sh
