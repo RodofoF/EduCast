@@ -1,5 +1,10 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { RefreshControl, ScrollView, Text, TouchableOpacity, View } from "react-native";
+import {
+  RefreshControl,
+  ScrollView,
+  TouchableOpacity,
+  Text,
+} from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
@@ -13,11 +18,10 @@ import { getCatalogSections, getFeaturedItem } from "../services/catalog";
 import { useAuthStore } from "../store/useAuthStore";
 import type { MainTabParamList, RootStackParamList } from "../navigation/types";
 import type { CatalogItem, CatalogSection } from "../types/catalog";
-import { theme } from "../utils/theme";
 
 type Props = BottomTabScreenProps<MainTabParamList, "HomeTab"> & {
   navigation: BottomTabScreenProps<MainTabParamList, "HomeTab">["navigation"] &
-  NativeStackScreenProps<RootStackParamList>["navigation"];
+    NativeStackScreenProps<RootStackParamList>["navigation"];
 };
 
 export default function HomeScreen({ navigation }: Props) {
@@ -27,6 +31,8 @@ export default function HomeScreen({ navigation }: Props) {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState("");
+
+  const displayName = user?.username || user?.email || "usuário";
 
   const loadContent = useCallback(async (silent = false) => {
     if (!silent) setLoading(true);
@@ -68,17 +74,64 @@ export default function HomeScreen({ navigation }: Props) {
 
   if (loading) {
     return (
-      <AppShell>
+      <AppShell
+        showHeader
+        title="EduCast"
+        subtitle={`Olá, ${displayName}`}
+        rightAction={
+          <TouchableOpacity
+            activeOpacity={0.85}
+            onPress={() => navigation.navigate("ProfileTab")}
+            style={{
+              width: 52,
+              height: 52,
+              borderRadius: 26,
+              alignItems: "center",
+              justifyContent: "center",
+              backgroundColor: "rgba(255,255,255,0.06)",
+              borderWidth: 1,
+              borderColor: "rgba(255,255,255,0.08)",
+            }}
+          >
+            <Ionicons name="person-outline" size={22} color="#ffffff" />
+          </TouchableOpacity>
+        }
+      >
         <LoadingState label="Carregando seu catálogo personalizado..." />
       </AppShell>
     );
   }
 
   return (
-    <AppShell>
+    <AppShell
+      showHeader
+      title="EduCast"
+      subtitle={`Olá, ${displayName}`}
+      rightAction={
+        <TouchableOpacity
+          activeOpacity={0.85}
+          onPress={() => navigation.navigate("ProfileTab")}
+          style={{
+            width: 52,
+            height: 52,
+            borderRadius: 26,
+            alignItems: "center",
+            justifyContent: "center",
+            backgroundColor: "rgba(255,255,255,0.06)",
+            borderWidth: 1,
+            borderColor: "rgba(255,255,255,0.08)",
+          }}
+        >
+          <Ionicons name="person-outline" size={22} color="#ffffff" />
+        </TouchableOpacity>
+      }
+    >
       <ScrollView
         style={{ flex: 1 }}
-        contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 10, paddingBottom: 28 }}
+        contentContainerStyle={{
+          paddingHorizontal: 20,
+          paddingBottom: 28,
+        }}
         refreshControl={
           <RefreshControl
             tintColor="#ffffff"
@@ -91,41 +144,6 @@ export default function HomeScreen({ navigation }: Props) {
         }
         showsVerticalScrollIndicator={false}
       >
-        <View
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-            justifyContent: "space-between",
-            marginBottom: 22,
-          }}
-        >
-          <View>
-            <Text style={{ color: theme.colors.text, fontSize: 28, fontWeight: "800", letterSpacing: -0.8 }}>
-              EduCast
-            </Text>
-            <Text style={{ color: theme.colors.textMuted, fontSize: 14, marginTop: 4 }}>
-              Olá, {user?.username || user?.email || "usuário"}
-            </Text>
-          </View>
-
-          <TouchableOpacity
-            activeOpacity={0.85}
-            onPress={() => navigation.navigate("ProfileTab")}
-            style={{
-              width: 44,
-              height: 44,
-              borderRadius: 22,
-              alignItems: "center",
-              justifyContent: "center",
-              backgroundColor: "rgba(255,255,255,0.10)",
-              borderWidth: 1,
-              borderColor: "rgba(255,255,255,0.08)",
-            }}
-          >
-            <Ionicons name="person-outline" size={20} color="#ffffff" />
-          </TouchableOpacity>
-        </View>
-
         {featured ? (
           <FeaturedBanner
             item={featured}
@@ -140,9 +158,11 @@ export default function HomeScreen({ navigation }: Props) {
         )}
 
         {error ? (
-          <View style={{ marginBottom: 18 }}>
-            <EmptyState title="Falha ao carregar" description={error} icon="alert-circle-outline" />
-          </View>
+          <EmptyState
+            title="Falha ao carregar"
+            description={error}
+            icon="alert-circle-outline"
+          />
         ) : null}
 
         {sections.length === 0 ? (

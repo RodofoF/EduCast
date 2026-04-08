@@ -1,5 +1,12 @@
-import React, { useEffect, useRef } from "react";
-import { ActivityIndicator, ScrollView, Text, TouchableOpacity, View } from "react-native";
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import {
+  ActivityIndicator,
+  LayoutChangeEvent,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useEvent } from "expo";
 import { useVideoPlayer, VideoView } from "expo-video";
@@ -11,9 +18,30 @@ import { theme } from "../utils/theme";
 
 type Props = NativeStackScreenProps<RootStackParamList, "Player">;
 
+function formatClock(totalSeconds: number) {
+  const safe = Math.max(0, Math.floor(totalSeconds));
+  const hours = Math.floor(safe / 3600);
+  const minutes = Math.floor((safe % 3600) / 60);
+  const seconds = safe % 60;
+
+  if (hours > 0) {
+    return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(
+      2,
+      "0"
+    )}:${String(seconds).padStart(2, "0")}`;
+  }
+
+  return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(
+    2,
+    "0"
+  )}`;
+}
+
 export default function PlayerScreen({ navigation, route }: Props) {
   const { item, resumeFromMs = 0 } = route.params;
+  const isLive = item.type === "LIVE";
 
+  const [seekBarWidth, setSeekBarWidth] = useState(0);
   const lastPositionMsRef = useRef(Math.max(0, resumeFromMs));
   const lastDurationMsRef = useRef(0);
 
@@ -21,7 +49,7 @@ export default function PlayerScreen({ navigation, route }: Props) {
     p.loop = false;
     p.timeUpdateEventInterval = 1;
 
-    if (resumeFromMs > 0) {
+    if (resumeFromMs > 0 && !isLive) {
       p.currentTime = resumeFromMs / 1000;
     }
 
@@ -43,13 +71,38 @@ export default function PlayerScreen({ navigation, route }: Props) {
     bufferedPosition: 0,
   });
 
-  useEffect(() => {
-    const currentTimeSeconds = Number(timeUpdate?.currentTime ?? 0);
-    const durationSeconds = Number(player.duration ?? 0);
+  const currentTimeSeconds = Number(timeUpdate?.currentTime ?? 0);
+  const durationSeconds = Number(player.duration ?? 0);
+  const canSeek = !isLive && Number.isFinite(durationSeconds) && durationSeconds > 0;
+  const progressRatio = canSeek
+    ? Math.min(Math.max(currentTimeSeconds / durationSeconds, 0), 1)
+    : 0;
 
+  const prettyStatus =
+    status === "loading"
+      ? "Carregando"
+      : status === "readyToPlay"
+      ? "Pronto"
+      : status === "error"
+      ? "Erro"
+      : status;
+
+  const playerHint = useMemo(() => {
+    if (isLive) {
+      return "Transmissão ao vivo: avanço e retrocesso ficam desabilitados.";
+    }
+
+    if (!canSeek) {
+      return "O vídeo abriu, mas a duração ainda não foi identificada. Se a URL do OnDemand estiver chegando como stream ao vivo no backend, o avanço pode continuar bloqueado.";
+    }
+
+    return "Toque na barra para pular para qualquer ponto do vídeo ou use os botões de 10 segundos.";
+  }, [canSeek, isLive]);
+
+  useEffect(() => {
     lastPositionMsRef.current = Math.max(0, Math.floor(currentTimeSeconds * 1000));
     lastDurationMsRef.current = Math.max(0, Math.floor(durationSeconds * 1000));
-  }, [timeUpdate?.currentTime, player.duration]);
+  }, [currentTimeSeconds, durationSeconds]);
 
   useEffect(() => {
     const persistFromRefs = () =>
@@ -73,14 +126,28 @@ export default function PlayerScreen({ navigation, route }: Props) {
     };
   }, [item.id]);
 
-  const prettyStatus =
-    status === "loading"
-      ? "Carregando"
-      : status === "readyToPlay"
-        ? "Pronto"
-        : status === "error"
-          ? "Erro"
-          : status;
+  function changePosition(seconds: number) {
+    if (!canSeek) return;
+
+    const nextTime = Math.min(
+      durationSeconds,
+      Math.max(0, currentTimeSeconds + seconds)
+    );
+
+    player.currentTime = nextTime;
+  }
+
+  function seekToTouch(event: any) {
+    if (!canSeek || seekBarWidth <= 0) return;
+
+    const touchX = event?.nativeEvent?.locationX ?? 0;
+    const ratio = Math.min(Math.max(touchX / seekBarWidth, 0), 1);
+    player.currentTime = durationSeconds * ratio;
+  }
+
+  function handleSeekBarLayout(event: LayoutChangeEvent) {
+    setSeekBarWidth(event.nativeEvent.layout.width);
+  }
 
   return (
     <AppShell>
@@ -145,17 +212,111 @@ export default function PlayerScreen({ navigation, route }: Props) {
             player={player}
             allowsFullscreen
             allowsPictureInPicture
-            contentFit="cover"
+            contentFit="contain"
             nativeControls
           />
         </View>
 
-        <View style={{ flexDirection: "row", alignItems: "center", gap: 10, marginTop: 16, marginBottom: 18 }}>
+        <View
+          style={{
+            marginTop: 16,
+            backgroundColor: theme.colors.backgroundAlt,
+            borderRadius: 24,
+            padding: 16,
+            borderWidth: 1,
+            borderColor: theme.colors.cardBorder,
+          }}
+        >
+          <TouchableOpacity
+            activeOpacity={canSeek ? 0.9 : 1}
+            onLayout={handleSeekBarLayout}
+            onPress={seekToTouch}
+            style={{
+              height: 18,
+              justifyContent: "center",
+              opacity: canSeek ? 1 : 0.5,
+            }}
+          >
+            <View
+              style={{
+                height: 6,
+                borderRadius: 999,
+                backgroundColor: "rgba(255,255,255,0.10)",
+                overflow: "hidden",
+              }}
+            >
+              <View
+                style={{
+                  width: `${progressRatio * 100}%`,
+                  height: "100%",
+                  borderRadius: 999,
+                  backgroundColor: theme.colors.primary,
+                }}
+              />
+            </View>
+          </TouchableOpacity>
+
+          <View
+            style={{
+              marginTop: 8,
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "space-between",
+            }}
+          >
+            <Text style={{ color: theme.colors.textSoft, fontSize: 12, fontWeight: "700" }}>
+              {isLive ? "AO VIVO" : formatClock(currentTimeSeconds)}
+            </Text>
+            <Text style={{ color: theme.colors.textSoft, fontSize: 12, fontWeight: "700" }}>
+              {canSeek ? formatClock(durationSeconds) : prettyStatus}
+            </Text>
+          </View>
+
+          <Text
+            style={{
+              color: theme.colors.textMuted,
+              fontSize: 12,
+              lineHeight: 18,
+              marginTop: 10,
+            }}
+          >
+            {playerHint}
+          </Text>
+        </View>
+
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 12,
+            marginTop: 16,
+            marginBottom: 16,
+          }}
+        >
+          <TouchableOpacity
+            onPress={() => changePosition(-10)}
+            disabled={!canSeek}
+            style={{
+              width: 52,
+              height: 52,
+              borderRadius: 16,
+              alignItems: "center",
+              justifyContent: "center",
+              backgroundColor: canSeek ? "rgba(255,255,255,0.10)" : "rgba(255,255,255,0.05)",
+            }}
+            activeOpacity={0.9}
+          >
+            <Ionicons name="play-back" size={18} color={canSeek ? "#ffffff" : "#6b7280"} />
+          </TouchableOpacity>
+
           <TouchableOpacity
             onPress={() => (isPlaying ? player.pause() : player.play())}
             style={{
+              flex: 1,
               flexDirection: "row",
               alignItems: "center",
+              justifyContent: "center",
               gap: 8,
               backgroundColor: theme.colors.primary,
               borderRadius: 18,
@@ -171,10 +332,26 @@ export default function PlayerScreen({ navigation, route }: Props) {
           </TouchableOpacity>
 
           <TouchableOpacity
+            onPress={() => changePosition(10)}
+            disabled={!canSeek}
+            style={{
+              width: 52,
+              height: 52,
+              borderRadius: 16,
+              alignItems: "center",
+              justifyContent: "center",
+              backgroundColor: canSeek ? "rgba(255,255,255,0.10)" : "rgba(255,255,255,0.05)",
+            }}
+            activeOpacity={0.9}
+          >
+            <Ionicons name="play-forward" size={18} color={canSeek ? "#ffffff" : "#6b7280"} />
+          </TouchableOpacity>
+
+          <TouchableOpacity
             onPress={() => player.replay()}
             style={{
-              width: 48,
-              height: 48,
+              width: 52,
+              height: 52,
               borderRadius: 16,
               alignItems: "center",
               justifyContent: "center",
@@ -268,7 +445,7 @@ function InfoPill({ icon, label }: { icon: keyof typeof Ionicons.glyphMap; label
         backgroundColor: "rgba(255,255,255,0.08)",
         borderRadius: 999,
         paddingHorizontal: 12,
-        paddingVertical: 8,
+        paddingVertical: 9,
       }}
     >
       <Ionicons name={icon} size={14} color="#c7d2fe" />
