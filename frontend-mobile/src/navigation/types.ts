@@ -7,6 +7,7 @@ export type RootStackParamList = {
   Details: { item: CatalogItem };
   Player: { item: CatalogItem; resumeFromMs?: number };
   MuralPost: { post: ContentItem };
+  ScanLoginQr: undefined;
 };
 
 export type MainTabParamList = {

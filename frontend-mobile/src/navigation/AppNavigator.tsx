@@ -12,6 +12,7 @@ import ProfileScreen from "../screens/ProfileScreen";
 import DetailsScreen from "../screens/DetailsScreen";
 import PlayerScreen from "../screens/PlayerScreen";
 import MuralPostScreen from "../screens/MuralPostScreen";
+import ScanLoginQrScreen from "../screens/ScanLoginQrScreen";
 import type { MainTabParamList, RootStackParamList } from "./types";
 import { theme } from "../utils/theme";
 import { useAuthStore } from "../store/useAuthStore";
@@ -121,11 +122,18 @@ export default function AppNavigator() {
         }}
       >
         {!token ? (
-          <Stack.Screen
-            name="Login"
-            component={LoginScreen}
-            options={{ headerShown: false }}
-          />
+          <>
+            <Stack.Screen
+              name="Login"
+              component={LoginScreen}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="ScanLoginQr"
+              component={ScanLoginQrScreen}
+              options={{ headerShown: false }}
+            />
+          </>
         ) : (
           <>
             <Stack.Screen
@@ -146,6 +154,11 @@ export default function AppNavigator() {
             <Stack.Screen
               name="Player"
               component={PlayerScreen}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="ScanLoginQr"
+              component={ScanLoginQrScreen}
               options={{ headerShown: false }}
             />
           </>

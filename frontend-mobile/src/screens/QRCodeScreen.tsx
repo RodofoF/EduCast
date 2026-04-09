@@ -1,57 +1,93 @@
-import React, { useMemo, useState } from "react";
-import {
-  ActivityIndicator,
-  Image,
-  ScrollView,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import React, { useMemo } from "react";
+import { ScrollView, Text, TouchableOpacity, View, Alert } from "react-native";
+import * as Clipboard from "expo-clipboard";
+import QRCode from "react-native-qrcode-svg";
 import AppShell from "../components/AppShell";
 import { theme } from "../utils/theme";
 import { useAuthStore } from "../store/useAuthStore";
 
-const API_URL = process.env.EXPO_PUBLIC_API_URL || "http://localhost:3000/api";
-
-function getApiOrigin(url: string) {
-  return url.replace(/\/api\/?$/, "");
-}
-
-function buildQrImageUrl() {
-  return `${API_URL.replace(/\/$/, "")}/qr/static/image`;
-}
-
-function extractConfigFromApiUrl(url: string) {
-  try {
-    const parsed = new URL(url);
-    return {
-      serverIp: parsed.hostname,
-      apiPort: parsed.port || "3000",
-      streamPort: "9090",
-    };
-  } catch {
-    return {
-      serverIp: "localhost",
-      apiPort: "3000",
-      streamPort: "9090",
-    };
-  }
-}
+type QrLoginPayload = {
+  type: "educast-share-login";
+  token: string;
+  user: {
+    id: number;
+    username: string;
+    email: string;
+    userGroups: number[];
+    createdAt?: string;
+    updatedAt?: string;
+  };
+};
 
 export default function QRCodeScreen() {
   const token = useAuthStore((state) => state.token);
-  const [reloadKey, setReloadKey] = useState(0);
-  const [loading, setLoading] = useState(true);
-  const [hasError, setHasError] = useState(false);
+  const user = useAuthStore((state) => state.user);
 
-  const qrImageUrl = useMemo(() => buildQrImageUrl(), []);
-  const config = useMemo(() => extractConfigFromApiUrl(API_URL), []);
+  const qrValue = useMemo(() => {
+    if (!token || !user) return "";
+
+    const payload: QrLoginPayload = {
+      type: "educast-share-login",
+      token,
+      user,
+    };
+
+    return JSON.stringify(payload);
+  }, [token, user]);
+
+  async function copiarPayload() {
+    if (!qrValue) return;
+    await Clipboard.setStringAsync(qrValue);
+    Alert.alert("Copiado", "O conteúdo do QR foi copiado.");
+  }
+
+  if (!token || !user) {
+    return (
+      <AppShell
+        showHeader
+        title="QRcode"
+        subtitle="Faça login para gerar um QR de acesso."
+      >
+        <View
+          style={{
+            flex: 1,
+            paddingHorizontal: 20,
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <Text
+            style={{
+              color: theme.colors.text,
+              fontSize: 18,
+              fontWeight: "800",
+              textAlign: "center",
+            }}
+          >
+            Nenhuma sessão ativa encontrada
+          </Text>
+
+          <Text
+            style={{
+              color: theme.colors.textSoft,
+              fontSize: 14,
+              textAlign: "center",
+              marginTop: 8,
+              lineHeight: 22,
+            }}
+          >
+            Entre no app para gerar o QRCode de compartilhamento de acesso.
+          </Text>
+        </View>
+      </AppShell>
+    );
+  }
 
   return (
     <AppShell
       showHeader
       title="QRcode"
-      subtitle="Escaneie este QR para compartilhar rapidamente a configuração de acesso do EduCast."
+      subtitle="Escaneie este QR no outro aparelho para compartilhar rapidamente o acesso do aluno."
     >
       <ScrollView
         contentContainerStyle={{
@@ -82,69 +118,11 @@ export default function QRCodeScreen() {
               overflow: "hidden",
             }}
           >
-            {loading && !hasError ? (
-              <ActivityIndicator size="large" color={theme.colors.accent} />
-            ) : null}
-
-            <Image
-              key={reloadKey}
-              source={{
-                uri: `${qrImageUrl}?t=${Date.now()}`,
-                headers: token
-                  ? {
-                      Authorization: `Bearer ${token}`,
-                    }
-                  : undefined,
-              }}
-              resizeMode="contain"
-              style={{
-                width: 240,
-                height: 240,
-                display: hasError ? "none" : "flex",
-              }}
-              onLoadStart={() => {
-                setLoading(true);
-                setHasError(false);
-              }}
-              onLoadEnd={() => {
-                setLoading(false);
-              }}
-              onError={() => {
-                setLoading(false);
-                setHasError(true);
-              }}
-            />
-
-            {hasError ? (
-              <View style={{ alignItems: "center", paddingHorizontal: 18 }}>
-                <Text
-                  style={{
-                    color: "#111827",
-                    fontSize: 16,
-                    fontWeight: "800",
-                    marginBottom: 8,
-                    textAlign: "center",
-                  }}
-                >
-                  Não foi possível carregar o QR
-                </Text>
-                <Text
-                  style={{
-                    color: "#4b5563",
-                    fontSize: 13,
-                    textAlign: "center",
-                    lineHeight: 19,
-                  }}
-                >
-                  Verifique a URL da API, o token de acesso e se o backend está
-                  online.
-                </Text>
-              </View>
-            ) : null}
+            <QRCode value={qrValue} size={220} />
           </View>
 
           <TouchableOpacity
-            onPress={() => setReloadKey((prev) => prev + 1)}
+            onPress={copiarPayload}
             style={{
               marginTop: 18,
               paddingHorizontal: 18,
@@ -156,7 +134,7 @@ export default function QRCodeScreen() {
             }}
           >
             <Text style={{ color: theme.colors.text, fontWeight: "800" }}>
-              Atualizar QR
+              Copiar conteúdo do QR
             </Text>
           </TouchableOpacity>
         </View>
@@ -178,14 +156,46 @@ export default function QRCodeScreen() {
               fontWeight: "800",
             }}
           >
-            Configuração atual
+            Sessão compartilhada
           </Text>
 
-          <InfoRow label="API base" value={getApiOrigin(API_URL)} />
-          <InfoRow label="Servidor" value={config.serverIp} />
-          <InfoRow label="Porta API" value={config.apiPort} />
-          <InfoRow label="Porta Stream" value={config.streamPort} />
-          <InfoRow label="Endpoint QR" value="/api/qr/static/image" />
+          <InfoRow label="Usuário" value={user.username} />
+          <InfoRow label="E-mail" value={user.email} />
+          <InfoRow label="ID" value={String(user.id)} />
+          <InfoRow label="Grupos" value={user.userGroups.join(", ")} />
+          <InfoRow label="Tipo QR" value="educast-share-login" />
+        </View>
+
+        <View
+          style={{
+            marginTop: 18,
+            backgroundColor: "rgba(245, 158, 11, 0.10)",
+            borderRadius: 20,
+            borderWidth: 1,
+            borderColor: "rgba(245, 158, 11, 0.28)",
+            padding: 16,
+          }}
+        >
+          <Text
+            style={{
+              color: "#fbbf24",
+              fontWeight: "800",
+              fontSize: 15,
+              marginBottom: 6,
+            }}
+          >
+            Atenção
+          </Text>
+          <Text
+            style={{
+              color: theme.colors.textSoft,
+              lineHeight: 22,
+              fontSize: 14,
+            }}
+          >
+            Esta é uma solução simples para apresentação/MVP. Esse QR compartilha
+            a sessão atual do aluno e não é o fluxo ideal para produção.
+          </Text>
         </View>
       </ScrollView>
     </AppShell>
