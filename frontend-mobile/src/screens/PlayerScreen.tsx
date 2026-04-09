@@ -27,13 +27,13 @@ function formatClock(totalSeconds: number) {
   if (hours > 0) {
     return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(
       2,
-      "0"
+      "0",
     )}:${String(seconds).padStart(2, "0")}`;
   }
 
   return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(
     2,
-    "0"
+    "0",
   )}`;
 }
 
@@ -73,7 +73,8 @@ export default function PlayerScreen({ navigation, route }: Props) {
 
   const currentTimeSeconds = Number(timeUpdate?.currentTime ?? 0);
   const durationSeconds = Number(player.duration ?? 0);
-  const canSeek = !isLive && Number.isFinite(durationSeconds) && durationSeconds > 0;
+  const canSeek =
+    !isLive && Number.isFinite(durationSeconds) && durationSeconds > 0;
   const progressRatio = canSeek
     ? Math.min(Math.max(currentTimeSeconds / durationSeconds, 0), 1)
     : 0;
@@ -82,10 +83,10 @@ export default function PlayerScreen({ navigation, route }: Props) {
     status === "loading"
       ? "Carregando"
       : status === "readyToPlay"
-      ? "Pronto"
-      : status === "error"
-      ? "Erro"
-      : status;
+        ? "Pronto"
+        : status === "error"
+          ? "Erro"
+          : status;
 
   const playerHint = useMemo(() => {
     if (isLive) {
@@ -100,7 +101,10 @@ export default function PlayerScreen({ navigation, route }: Props) {
   }, [canSeek, isLive]);
 
   useEffect(() => {
-    lastPositionMsRef.current = Math.max(0, Math.floor(currentTimeSeconds * 1000));
+    lastPositionMsRef.current = Math.max(
+      0,
+      Math.floor(currentTimeSeconds * 1000),
+    );
     lastDurationMsRef.current = Math.max(0, Math.floor(durationSeconds * 1000));
   }, [currentTimeSeconds, durationSeconds]);
 
@@ -129,12 +133,30 @@ export default function PlayerScreen({ navigation, route }: Props) {
   function changePosition(seconds: number) {
     if (!canSeek) return;
 
-    const nextTime = Math.min(
-      durationSeconds,
-      Math.max(0, currentTimeSeconds + seconds)
-    );
+    try {
+      // garante que o player está ativo (Android precisa disso)
+      if (!player.playing) {
+        player.play();
+      }
 
-    player.currentTime = nextTime;
+      setTimeout(() => {
+        try {
+          console.log("[Player] seekBy:", seconds);
+          player.seekBy(seconds);
+        } catch (err) {
+          console.log("[Player] fallback currentTime");
+
+          const nextTime = Math.min(
+            durationSeconds,
+            Math.max(0, currentTimeSeconds + seconds),
+          );
+
+          player.currentTime = nextTime;
+        }
+      }, 150);
+    } catch (err) {
+      console.log("[Player] erro geral no seek:", err);
+    }
   }
 
   function seekToTouch(event: any) {
@@ -208,9 +230,13 @@ export default function PlayerScreen({ navigation, route }: Props) {
           }}
         >
           <VideoView
-            style={{ width: "100%", aspectRatio: 16 / 9, backgroundColor: "#000000" }}
+            style={{
+              width: "100%",
+              aspectRatio: 16 / 9,
+              backgroundColor: "#000000",
+            }}
             player={player}
-            allowsFullscreen
+            fullscreenOptions={{ enable: true }}
             allowsPictureInPicture
             contentFit="contain"
             nativeControls
@@ -264,10 +290,22 @@ export default function PlayerScreen({ navigation, route }: Props) {
               justifyContent: "space-between",
             }}
           >
-            <Text style={{ color: theme.colors.textSoft, fontSize: 12, fontWeight: "700" }}>
+            <Text
+              style={{
+                color: theme.colors.textSoft,
+                fontSize: 12,
+                fontWeight: "700",
+              }}
+            >
               {isLive ? "AO VIVO" : formatClock(currentTimeSeconds)}
             </Text>
-            <Text style={{ color: theme.colors.textSoft, fontSize: 12, fontWeight: "700" }}>
+            <Text
+              style={{
+                color: theme.colors.textSoft,
+                fontSize: 12,
+                fontWeight: "700",
+              }}
+            >
               {canSeek ? formatClock(durationSeconds) : prettyStatus}
             </Text>
           </View>
@@ -303,11 +341,17 @@ export default function PlayerScreen({ navigation, route }: Props) {
               borderRadius: 16,
               alignItems: "center",
               justifyContent: "center",
-              backgroundColor: canSeek ? "rgba(255,255,255,0.10)" : "rgba(255,255,255,0.05)",
+              backgroundColor: canSeek
+                ? "rgba(255,255,255,0.10)"
+                : "rgba(255,255,255,0.05)",
             }}
             activeOpacity={0.9}
           >
-            <Ionicons name="play-back" size={18} color={canSeek ? "#ffffff" : "#6b7280"} />
+            <Ionicons
+              name="play-back"
+              size={18}
+              color={canSeek ? "#ffffff" : "#6b7280"}
+            />
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -325,8 +369,18 @@ export default function PlayerScreen({ navigation, route }: Props) {
             }}
             activeOpacity={0.9}
           >
-            <Ionicons name={isPlaying ? "pause" : "play"} size={18} color={theme.colors.primaryDark} />
-            <Text style={{ color: theme.colors.primaryDark, fontSize: 14, fontWeight: "800" }}>
+            <Ionicons
+              name={isPlaying ? "pause" : "play"}
+              size={18}
+              color={theme.colors.primaryDark}
+            />
+            <Text
+              style={{
+                color: theme.colors.primaryDark,
+                fontSize: 14,
+                fontWeight: "800",
+              }}
+            >
               {isPlaying ? "Pausar" : "Reproduzir"}
             </Text>
           </TouchableOpacity>
@@ -340,11 +394,17 @@ export default function PlayerScreen({ navigation, route }: Props) {
               borderRadius: 16,
               alignItems: "center",
               justifyContent: "center",
-              backgroundColor: canSeek ? "rgba(255,255,255,0.10)" : "rgba(255,255,255,0.05)",
+              backgroundColor: canSeek
+                ? "rgba(255,255,255,0.10)"
+                : "rgba(255,255,255,0.05)",
             }}
             activeOpacity={0.9}
           >
-            <Ionicons name="play-forward" size={18} color={canSeek ? "#ffffff" : "#6b7280"} />
+            <Ionicons
+              name="play-forward"
+              size={18}
+              color={canSeek ? "#ffffff" : "#6b7280"}
+            />
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -376,33 +436,72 @@ export default function PlayerScreen({ navigation, route }: Props) {
             <View
               style={{
                 alignSelf: "flex-start",
-                backgroundColor: item.type === "LIVE" ? "rgba(190,24,93,0.92)" : "rgba(59,130,246,0.18)",
+                backgroundColor:
+                  item.type === "LIVE"
+                    ? "rgba(190,24,93,0.92)"
+                    : "rgba(59,130,246,0.18)",
                 borderRadius: 999,
                 paddingHorizontal: 12,
                 paddingVertical: 6,
                 marginBottom: 12,
               }}
             >
-              <Text style={{ color: "#dbeafe", fontSize: 11, fontWeight: "800" }}>{item.badge}</Text>
+              <Text
+                style={{ color: "#dbeafe", fontSize: 11, fontWeight: "800" }}
+              >
+                {item.badge}
+              </Text>
             </View>
           )}
 
-          <Text style={{ color: theme.colors.text, fontSize: 28, fontWeight: "900", lineHeight: 32, marginBottom: 6 }}>
+          <Text
+            style={{
+              color: theme.colors.text,
+              fontSize: 28,
+              fontWeight: "900",
+              lineHeight: 32,
+              marginBottom: 6,
+            }}
+          >
             {item.title}
           </Text>
 
-          <Text style={{ color: theme.colors.textMuted, fontSize: 15, lineHeight: 21, marginBottom: 14 }}>
+          <Text
+            style={{
+              color: theme.colors.textMuted,
+              fontSize: 15,
+              lineHeight: 21,
+              marginBottom: 14,
+            }}
+          >
             {item.subtitle}
           </Text>
 
-          <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 10, marginBottom: 16 }}>
+          <View
+            style={{
+              flexDirection: "row",
+              flexWrap: "wrap",
+              gap: 10,
+              marginBottom: 16,
+            }}
+          >
             <InfoPill icon="film-outline" label={item.type} />
             <InfoPill icon="time-outline" label={item.duration} />
             <InfoPill icon="pulse-outline" label={prettyStatus} />
-            <InfoPill icon="person-outline" label={item.teacher || "Equipe EduCast"} />
+            <InfoPill
+              icon="person-outline"
+              label={item.teacher || "Equipe EduCast"}
+            />
           </View>
 
-          <Text style={{ color: "#d5ddea", fontSize: 14, lineHeight: 22, marginBottom: 16 }}>
+          <Text
+            style={{
+              color: "#d5ddea",
+              fontSize: 14,
+              lineHeight: 22,
+              marginBottom: 16,
+            }}
+          >
             {item.description}
           </Text>
 
@@ -415,18 +514,37 @@ export default function PlayerScreen({ navigation, route }: Props) {
               borderColor: "rgba(255,255,255,0.05)",
             }}
           >
-            <Text style={{ color: theme.colors.textSoft, fontSize: 12, fontWeight: "700", marginBottom: 8 }}>
+            <Text
+              style={{
+                color: theme.colors.textSoft,
+                fontSize: 12,
+                fontWeight: "700",
+                marginBottom: 8,
+              }}
+            >
               Progresso salvo automaticamente
             </Text>
-            <Text style={{ color: theme.colors.text, fontSize: 12, lineHeight: 18 }}>
-              Ao sair desta tela, o EduCast salva o ponto atual para você continuar depois.
+            <Text
+              style={{ color: theme.colors.text, fontSize: 12, lineHeight: 18 }}
+            >
+              Ao sair desta tela, o EduCast salva o ponto atual para você
+              continuar depois.
             </Text>
           </View>
 
           {status === "loading" && (
-            <View style={{ flexDirection: "row", alignItems: "center", gap: 10, marginTop: 16 }}>
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                gap: 10,
+                marginTop: 16,
+              }}
+            >
               <ActivityIndicator color="#ffffff" />
-              <Text style={{ color: theme.colors.text, fontSize: 13 }}>Carregando vídeo...</Text>
+              <Text style={{ color: theme.colors.text, fontSize: 13 }}>
+                Carregando vídeo...
+              </Text>
             </View>
           )}
         </View>
@@ -435,7 +553,13 @@ export default function PlayerScreen({ navigation, route }: Props) {
   );
 }
 
-function InfoPill({ icon, label }: { icon: keyof typeof Ionicons.glyphMap; label: string }) {
+function InfoPill({
+  icon,
+  label,
+}: {
+  icon: keyof typeof Ionicons.glyphMap;
+  label: string;
+}) {
   return (
     <View
       style={{
@@ -449,7 +573,11 @@ function InfoPill({ icon, label }: { icon: keyof typeof Ionicons.glyphMap; label
       }}
     >
       <Ionicons name={icon} size={14} color="#c7d2fe" />
-      <Text style={{ color: theme.colors.text, fontSize: 12, fontWeight: "700" }}>{label}</Text>
+      <Text
+        style={{ color: theme.colors.text, fontSize: 12, fontWeight: "700" }}
+      >
+        {label}
+      </Text>
     </View>
   );
 }
