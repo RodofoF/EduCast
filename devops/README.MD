@@ -16,10 +16,11 @@ O serviço principal está definido em `docker-compose.yml` como `nginx-rtmp`.
 Quando o container sobe, o fluxo é o seguinte:
 
 1. o `Dockerfile` cria a imagem baseada em `tiangolo/nginx-rtmp`
-2. o script `start-streaming.sh` inicia o `nginx`
-3. em seguida, ele executa `live/live.sh`
-4. o `live.sh` lê os vídeos da pasta `live/` e publica os arquivos em **loop** para o próprio servidor RTMP
-5. o `nginx.conf` transforma esses streams em saídas **HLS** e **DASH** e também expõe os vídeos da pasta `ondemand/`
+2. o container inicia o `nginx` com o `CMD` padrão da imagem
+3. o `nginx.conf` transforma streams em saídas **HLS** e **DASH** e também expõe os vídeos da pasta `ondemand/`
+
+Para simular canais locais em desenvolvimento, execute manualmente `start-streaming.sh` dentro do container.
+Esse script inicia o simulador `live/live.sh`, que publica os vídeos da pasta `live/` em **loop** para o próprio servidor RTMP.
 
 ---
 
@@ -28,7 +29,7 @@ Quando o container sobe, o fluxo é o seguinte:
 - `Dockerfile`: monta a imagem do servidor
 - `docker-compose.yml`: sobe o container e monta os volumes
 - `nginx.conf`: configuração RTMP + HTTP
-- `start-streaming.sh`: inicialização do `nginx` e do simulador de canais
+- `start-streaming.sh`: inicialização do simulador de canais em ambiente local
 - `live/live.sh`: publica os vídeos locais em loop via RTMP
 - `live/`: vídeos usados para simular canais ao vivo
 - `ondemand/`: biblioteca de vídeos disponíveis sob demanda
@@ -83,6 +84,12 @@ rtmp://localhost:1935/vod/mp4:speedcast/speedcast-demo.mp4
 ```bash
 cd devops
 docker compose up --build -d
+```
+
+## Como simular canais locais (desenvolvimento)
+
+```bash
+docker exec educast_nginx_rtmp /usr/local/bin/start-streaming.sh
 ```
 
 ## Como parar
