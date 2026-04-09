@@ -42,5 +42,8 @@ Fluxo de demonstração da entrega, com foco em sincronização inicial via serv
 * Validar que um dispositivo sem interação prévia com o servidor (celular 2) consegue receber os conteúdos por proximidade.
 * Demonstrar o objetivo principal do projeto: distribuição de conteúdo descentralizada, com suporte a ambientes de baixa ou nenhuma conectividade.
 
+## Fazer
+Rodolfo
+Melhorar o diagrama
 
 

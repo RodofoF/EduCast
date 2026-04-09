@@ -188,7 +188,7 @@ Escaneie o QR Code com o Expo Go para ter acesso ao app em desenvolvimento.
 1. Execute o comando abaixo no diretório `frontend-web`
 
 ```bash
-  docker compose up --build
+  docker compose up --build -d
 ```
 
 Para acessar o frontend web via Docker: **http://localhost:8081**
@@ -209,6 +209,8 @@ Altere as variáveis que estão em localhost para o IP do equipamento utilizado 
 Para não deixar o README.MD extenso, cada diretório possui um arquivo para orientar e trazer informações mais detalhadas de cada etapa do projeto.
 
 ---
+## Link
+* inserir link do video
 
 ## Aprendizados 
 
@@ -222,8 +224,8 @@ Para não deixar o README.MD extenso, cada diretório possui um arquivo para ori
 * **E-mail**: rdf.8888@gmail.com
 * **RM** 365194
 
-* **Nome**: Wanderson
-* **E-mail**: 
-* **RM** 
+* **Nome**: Wanderson Sousa
+* **E-mail**: wanderson@wsousa.dev
+* **RM** 365367 
 
 
