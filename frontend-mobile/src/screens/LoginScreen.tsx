@@ -294,6 +294,27 @@ export default function LoginScreen({ navigation }: Props) {
                 )}
               </TouchableOpacity>
 
+              <TouchableOpacity
+                onPress={() => navigation.navigate("ScanLoginQr")}
+                style={{
+                  marginBottom: 12,
+                  paddingVertical: 12,
+                  borderRadius: 999,
+                  borderWidth: 1,
+                  borderColor: "#1d4ed8",
+                }}
+              >
+                <Text
+                  style={{
+                    textAlign: "center",
+                    fontWeight: "800",
+                    color: "#1d4ed8",
+                  }}
+                >
+                  Ler QRCode
+                </Text>
+              </TouchableOpacity>
+
               <Text
                 style={{
                   color: theme.colors.textSoft,
