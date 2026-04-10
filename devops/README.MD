@@ -5,7 +5,7 @@ Este diretório contém **um único container Docker** responsável por:
 - receber/publicar streams **RTMP**
 - gerar saídas **HLS** e **DASH** para os canais ao vivo
 - servir vídeos **MP4 on-demand** da pasta `ondemand`
-- simular 3 canais locais em loop para facilitar o desenvolvimento
+- simular 3 canais locais em loop para facilitar o desenvolvimento (execução manual)
 
 ---
 
@@ -22,6 +22,9 @@ Quando o container sobe, o fluxo é o seguinte:
 Para simular canais locais em desenvolvimento, execute manualmente `start-streaming.sh` dentro do container.
 Esse script inicia o simulador `live/live.sh`, que publica os vídeos da pasta `live/` em **loop** para o próprio servidor RTMP.
 
+Também existe o script `live/liveFromServer.sh`, usado para receber um sinal ao vivo externo (atualmente via `udp://127.0.0.1:10001`) e reenviar para `rtmp://127.0.0.1:1935/live/1002`.
+Depois que esse stream entra no app `live` do nginx-rtmp, o `nginx.conf` faz a segmentação para **HLS** e **DASH** automaticamente.
+
 ---
 
 ## Estrutura importante
@@ -31,8 +34,27 @@ Esse script inicia o simulador `live/live.sh`, que publica os vídeos da pasta `
 - `nginx.conf`: configuração RTMP + HTTP
 - `start-streaming.sh`: inicialização do simulador de canais em ambiente local
 - `live/live.sh`: publica os vídeos locais em loop via RTMP
+- `live/liveFromServer.sh`: recebe stream ao vivo (UDP) e publica em RTMP para o nginx-rtmp transformar em HLS/DASH
 - `live/`: vídeos usados para simular canais ao vivo
 - `ondemand/`: biblioteca de vídeos disponíveis sob demanda
+
+---
+
+## Fluxos de live
+
+### 1. Simulação local (loop de arquivos)
+
+- Script: `live/live.sh`
+- Entrada: arquivos MP4 da pasta `live/`
+- Saída RTMP: `rtmp://127.0.0.1:1935/live/{canal}`
+- Saída final: HLS em `/hls/live/{canal}/index.m3u8` e DASH em `/dash/live/{canal}/index.mpd`
+
+### 2. Ingestão de live do servidor
+
+- Script: `live/liveFromServer.sh`
+- Entrada: `udp://127.0.0.1:10001`
+- Saída RTMP: `rtmp://127.0.0.1:1935/live/1002`
+- Saída final: HLS em `/hls/live/1002/index.m3u8` e DASH em `/dash/live/1002/index.mpd`
 
 ---
 
@@ -92,6 +114,12 @@ docker compose up --build -d
 docker exec educast_nginx_rtmp /usr/local/bin/start-streaming.sh
 ```
 
+## Como receber live externa e transformar em HLS/DASH
+
+```bash
+docker exec educast_nginx_rtmp sh /opt/live/liveFromServer.sh
+```
+
 ## Como parar
 
 ```bash
@@ -118,6 +146,7 @@ http://localhost:9090/health
 http://localhost:9090/hls/live/1001/index.m3u8
 http://localhost:9090/hls/live/1003/index.m3u8
 http://localhost:9090/hls/live/1012/index.m3u8
+http://localhost:9090/hls/live/1002/index.m3u8   # quando liveFromServer.sh estiver ativo
 ```
 
 ### DASH ao vivo
@@ -125,6 +154,7 @@ http://localhost:9090/hls/live/1012/index.m3u8
 http://localhost:9090/dash/live/1001/index.mpd
 http://localhost:9090/dash/live/1003/index.mpd
 http://localhost:9090/dash/live/1012/index.mpd
+http://localhost:9090/dash/live/1002/index.mpd   # quando liveFromServer.sh estiver ativo
 ```
 
 ### Estatísticas RTMP
