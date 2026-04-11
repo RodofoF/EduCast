@@ -211,10 +211,10 @@ Para não deixar o README.MD extenso, cada diretório possui um arquivo para ori
 ---
 ## Links
 ### Pitch
-* inserir link do vídeo
+* [Pitch](https://drive.google.com/file/d/1trfXMuCReIyagR2yFkGSxcpcK4u6haRe/view?usp=drive_link)
 
 ### Demonstração EduCast
-* inserir aqui
+* [MVP](https://drive.google.com/file/d/1TjUmKlNbPrzM9eY0wRVz8sdCK4zOryE8/view?usp=drive_link)
 
 ---
 ## Aprendizados 
