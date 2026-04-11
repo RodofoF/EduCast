@@ -30,9 +30,9 @@ O Brasil possui regiões com acesso limitado à internet, dificultando o ensino 
 ## 💡 Solução
 Para solucionar esse problema, propomos a plataforma **EduCast**.
 
-O EduCast é uma plataforma que tem como objetivo descentralizar o consumo de CDNs e entregar uma experiência de educação a distância similar a plataformas tradicionais, oferecendo integração entre backend, hardware (Placa TBS 6590), plataforma de gerência (frontend-web) e plataforma do usuário (frontend-mobile).
+O EduCast é uma plataforma que tem como objetivo descentralizar o consumo de CDNs e entregar uma experiência de educação a distância similar à de plataformas tradicionais, oferecendo integração entre backend, hardware (Placa TBS 6590), plataforma de gerência (frontend-web) e plataforma do usuário (frontend-mobile).
 
-A proposta do EduCast é oferecer conteúdo educacional através da intranet. Se possível, o servidor também deve ter acesso à internet para receber conteúdo externo e distribuí-lo na intranet da região.
+A proposta do EduCast é oferecer conteúdo educacional por meio da intranet. Se possível, o servidor também deve ter acesso à internet para receber conteúdo externo e distribuí-lo na intranet da região.
 
 O projeto é inspirado em novas tecnologias como DVB-NIP, que se propõem a transmitir vídeos ao vivo e on-demand em padrões web.
 
@@ -62,7 +62,7 @@ Esse diretório é importante apenas para o desenvolvedor, não para o usuário.
 - Assistir vídeos ao vivo quando conectado à intranet;
 - Assistir e armazenar vídeos on-demand;
 - Consumir conteúdos de texto como matérias, livros, informativos e etc.
-- Compartilhamento dos dados do app através do QR gerado no app, inclusive offline entre dispositivos móveis
+- Compartilhamento dos dados do app por meio do QR gerado no aplicativo, inclusive offline entre dispositivos móveis
 ---
 
 ## 🧩 Estrutura do Projeto
@@ -149,7 +149,7 @@ docker exec educast_nginx_rtmp /usr/local/bin/start-streaming.sh
 
 ## 🔧 Backend
 
-1. Após o streaming estar ativo, execute o comando docker no diretório `backend`
+1. Após o streaming estar ativo, execute o comando Docker no diretório `backend`
 
 ```bash
 docker compose up --build -d
@@ -158,7 +158,7 @@ Omita a flag `-d` para conseguir visualizar os logs
 
 2. Acessos
 * Documentação: http://localhost:3000/api-docs
-* DB PhpAdmin: http://localhost:8080
+* DB phpMyAdmin: http://localhost:8080
 
 3. Usuários
 Na primeira build ou inicialização do projeto, existem os usuários padrão `admin` e `student` para gerenciar o projeto. O primeiro acesso pode ser feito por:
@@ -180,7 +180,7 @@ Na primeira build ou inicialização do projeto, existem os usuários padrão `a
   npx expo start
 ```
 
-Escaneie o QR Code com o Expo Go para ter acesso ao app em desenvolvimento.
+Escaneie o QR Code com o Expo Go para acessar o app em desenvolvimento.
 
 ---
 
@@ -201,7 +201,7 @@ Cada projeto possui suas próprias variáveis. No momento, elas estão expostas 
 
 ⚠️ Observações importantes
 
-Altere as variáveis que estão em localhost para o IP do equipamento utilizado para teste, algumas aplicações podem não funcionar devido a esse conflito
+Altere as variáveis que estão em localhost para o IP do equipamento utilizado para teste. Algumas aplicações podem não funcionar devido a esse conflito.
 
 ---
 ## Mais informações do projeto
@@ -209,23 +209,38 @@ Altere as variáveis que estão em localhost para o IP do equipamento utilizado 
 Para não deixar o README.MD extenso, cada diretório possui um arquivo para orientar e trazer informações mais detalhadas de cada etapa do projeto.
 
 ---
-## Link
-* inserir link do video
+## Links
+### Pitch
+* inserir link do vídeo
 
+### Demonstração EduCast
+* inserir aqui
+
+---
 ## Aprendizados 
+* A importância da boa comunicação foi essencial durante o projeto. Como decidimos participar do hackathon em apenas duas pessoas, estávamos focados em nossas atividades e com pouco tempo para documentar, mas nossa comunicação diária nos ajudou a manter o ritmo e o processo de criação;
+* Acreditamos que o conteúdo e o aprendizado durante a pós nos ajudaram a amadurecer o nosso código. Conseguimos entender com mais clareza o que devemos fazer e como fazer;
+* O uso de IA é essencial. Não fizemos nada em Vibe Coding, mas, sem sombra de dúvida, é uma ferramenta sem limites quando precisamos consultar algo ou quando estamos começando um processo sobre o qual não temos total domínio e precisamos tirar dúvidas.
 
-## Dificuldades e pendências
+## Dificuldades
+* Tivemos dificuldades no ajuste do app mobile. Como estávamos testando em Android e iOS, vimos algumas incompatibilidades em alguns momentos, mas conseguimos resolvê-las;
+* No início do projeto, estávamos focados em alcançar um sistema mais completo, bem mais próximo do que apresentamos no pitch. Por exemplo, no início pensávamos em fazer um sistema de login mais complexo, com um banco relacionado a informações do aluno, sala, escola e conteúdo baixado. No entanto, vimos que teríamos pouco tempo para focar nas features de vídeo, que podem ser um diferencial no projeto;
+* Tivemos dificuldades para configurar a placa TBS. No projeto, a ideia era ter uma melhor integração com o sistema do EduCast, mas não focamos nisso. Se focássemos nisso, teríamos uma ótima interação com a placa, mas nosso objetivo principal era ter uma ótima plataforma de ensino, então essa integração ficou como pendência.
 
+## Pendências e futuras melhorias
+* Melhor integração do EduCast com a placa TBS 6590. Poderíamos ter a gerência facilitada pelo frontend e fazer ajustes de frequência ou definir qual canal transmitir pelo EduCast;
+* Melhor manipulação do QR e da transferência de arquivos. A ideia inicial era que o QR Code carregasse a variável de identificação do servidor: se o usuário escaneasse o QR do servidor, teria acesso ao conteúdo online e offline dele; se o usuário escaneasse o QR de outro usuário, o celular se transformaria em um "servidor";
+* Criar interações dos usuários com a plataforma, como exercícios de fixação, quiz ou minigames. Isso tornaria o app mais atrativo.
 
 ---
 
 ## Autores
-* **Nome**: Rodolfo Ferreira Fernandes
-* **E-mail**: rdf.8888@gmail.com
-* **RM** 365194
+### Rodolfo Ferreira Fernandes
+- E-mail: [rdf.8888@gmail.com](mailto:rdf.8888@gmail.com)
+- RM: 365194
 
-* **Nome**: Wanderson Sousa
-* **E-mail**: wanderson@wsousa.dev
-* **RM** 365367 
+### Wanderson Sousa
+- E-mail: [wanderson@wsousa.dev](mailto:wanderson@wsousa.dev)
+- RM: 365367
 
 
